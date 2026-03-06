@@ -411,11 +411,9 @@ namespace UnicornOverlord
 			}
 		}
 
-		// Class IDs that correspond to promoted classes (have access to 4 equipment slots).
-		// Derived from save file analysis; unpromoted classes only support 3 slots.
-		private static readonly HashSet<uint> PromotedClassIds = new HashSet<uint>
+		private static readonly HashSet<uint> BaseClassIds = new HashSet<uint>
 		{
-			8, 10, 18, 22, 24, 28, 36, 38, 42, 43, 44, 45, 46, 47, 49, 56, 70
+			1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 53, 55
 		};
 
 		private void RefreshEquippedSlots()
@@ -423,7 +421,7 @@ namespace UnicornOverlord
 			EquippedSlots.Clear();
 			if (mSelectedCharacter == null) return;
 
-			bool isPromoted = PromotedClassIds.Contains(mSelectedCharacter.Class);
+			bool isPromoted = !BaseClassIds.Contains(mSelectedCharacter.Class);
 
 			// Build a lookup from item Index -> item name
 			var indexToName = new Dictionary<uint, string>();

@@ -40,6 +40,9 @@ namespace UnicornOverlord
         public bool IsEmpty => mItemIndex == 0;
         public bool HasItem => mItemIndex != 0;
 
+        // True if an item can be created and equipped into this slot
+        public bool CanCreate => IsEmpty && !IsLocked;
+
         public EquippedSlot(int slotNumber)
         {
             SlotNumber = slotNumber;

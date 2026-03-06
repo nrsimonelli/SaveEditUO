@@ -155,7 +155,7 @@
 								<Button DockPanel.Dock="Bottom" Content="Create &amp; Equip"
 										Command="{Binding CreateAndEquipCommand}"
 										CommandParameter="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem}"
-										IsEnabled="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem.IsEmpty, FallbackValue=False, TargetNullValue=False}"/>
+										IsEnabled="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem.CanCreate, FallbackValue=False, TargetNullValue=False}"/>
 								<ListBox Name="ListBoxEquippedSlots" ItemsSource="{Binding EquippedSlots}"
 										 HorizontalContentAlignment="Stretch">
 									<ListBox.ItemTemplate>
