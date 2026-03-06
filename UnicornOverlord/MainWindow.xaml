@@ -151,16 +151,29 @@
 					</Grid>
 					<TabControl Grid.Column="2">
 						<TabItem Header="Equipment">
-							<ListBox ItemsSource="{Binding EquippedSlots}">
-								<ListBox.ItemTemplate>
-									<DataTemplate>
-										<StackPanel Orientation="Horizontal">
-											<Label Content="{Binding SlotLabel}" Width="45"/>
-											<Label Content="{Binding ItemName}"/>
-										</StackPanel>
-									</DataTemplate>
-								</ListBox.ItemTemplate>
-							</ListBox>
+							<DockPanel>
+								<Button DockPanel.Dock="Bottom" Content="Create &amp; Equip"
+										Command="{Binding CreateAndEquipCommand}"
+										CommandParameter="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem}"/>
+								<ListBox Name="ListBoxEquippedSlots" ItemsSource="{Binding EquippedSlots}">
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<StackPanel Orientation="Horizontal">
+												<Label Content="{Binding SlotLabel}" Width="45"/>
+												<Label Content="{Binding ItemName}" Width="160"/>
+												<Button Content="Morph"
+														Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.MorphSlotCommand}"
+														CommandParameter="{Binding}"
+														IsEnabled="{Binding IsEmpty, Converter={x:Static local:BoolInverter.Instance}}"/>
+												<Button Content="Delete"
+														Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.DeleteSlotCommand}"
+														CommandParameter="{Binding}"
+														IsEnabled="{Binding IsEmpty, Converter={x:Static local:BoolInverter.Instance}}"/>
+											</StackPanel>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+							</DockPanel>
 						</TabItem>
 						<TabItem Header="Bond">
 							<DockPanel>
