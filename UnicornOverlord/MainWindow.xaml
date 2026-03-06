@@ -65,9 +65,9 @@
 			<TabItem Header="Character">
 				<Grid>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition/>
-						<ColumnDefinition/>
-						<ColumnDefinition/>
+						<ColumnDefinition Width="200"/>
+						<ColumnDefinition Width="220"/>
+						<ColumnDefinition Width="*"/>
 					</Grid.ColumnDefinitions>
 					<DockPanel>
 						<Grid DockPanel.Dock="Bottom">
@@ -155,25 +155,26 @@
 								<Button DockPanel.Dock="Bottom" Content="Create &amp; Equip"
 										Command="{Binding CreateAndEquipCommand}"
 										CommandParameter="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem}"
-										IsEnabled="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem.IsEmpty}"/>
-								<ListBox Name="ListBoxEquippedSlots" ItemsSource="{Binding EquippedSlots}">
+										IsEnabled="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem.IsEmpty, FallbackValue=False, TargetNullValue=False}"/>
+								<ListBox Name="ListBoxEquippedSlots" ItemsSource="{Binding EquippedSlots}"
+										 HorizontalContentAlignment="Stretch">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
 											<Grid IsEnabled="{Binding IsLocked, Converter={x:Static local:BoolInverter.Instance}}">
 												<Grid.ColumnDefinitions>
 													<ColumnDefinition Width="45"/>
 													<ColumnDefinition Width="*"/>
-													<ColumnDefinition Width="Auto"/>
-													<ColumnDefinition Width="Auto"/>
+													<ColumnDefinition Width="50"/>
+													<ColumnDefinition Width="50"/>
 												</Grid.ColumnDefinitions>
 												<Label Grid.Column="0" Content="{Binding SlotLabel}"/>
 												<Label Grid.Column="1" Content="{Binding ItemName}"
 													   Foreground="{Binding IsLocked, Converter={x:Static local:LockedBrushConverter.Instance}}"/>
-												<Button Grid.Column="2" Content="Morph"
+												<Button Grid.Column="2" Content="Morph" HorizontalAlignment="Stretch"
 														Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.MorphSlotCommand}"
 														CommandParameter="{Binding}"
 														IsEnabled="{Binding HasItem}"/>
-												<Button Grid.Column="3" Content="Delete"
+												<Button Grid.Column="3" Content="Delete" HorizontalAlignment="Stretch"
 														Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.DeleteSlotCommand}"
 														CommandParameter="{Binding}"
 														IsEnabled="{Binding HasItem}"/>
@@ -225,25 +226,34 @@
 					</ListBox>
 				</DockPanel>
 			</TabItem>
-			<TabItem Header="Equipment">
+				<TabItem Header="Equipment">
 				<DockPanel>
 					<Button DockPanel.Dock="Bottom" Content="Append" Command="{Binding AppendEquipmentCommand}"/>
-					<ListBox ItemsSource="{Binding Equipments}">
+					<ListBox ItemsSource="{Binding Equipments}" HorizontalContentAlignment="Stretch">
 						<ListBox.ItemTemplate>
 							<DataTemplate>
-								<StackPanel Orientation="Horizontal">
-									<Label Content="???1"/>
-									<Label Content="{Binding Equipment1}" Width="50"/>
-									<Label Content="???2"/>
-									<Label Content="{Binding Equipment2}" Width="50"/>
-									<Button Content=" ... "
-									Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.ChoiceEquipmentCommand}"
-									CommandParameter="{Binding}"/>
-									<Label Content="{Binding ID, Converter={StaticResource ItemIDConverter}}"/>
-									<Button Content="Delete"
-									Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.DeleteEquipmentCommand}"
-									CommandParameter="{Binding}"/>
-								</StackPanel>
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto"/>
+										<ColumnDefinition Width="40"/>
+										<ColumnDefinition Width="Auto"/>
+										<ColumnDefinition Width="40"/>
+										<ColumnDefinition Width="30"/>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="55"/>
+									</Grid.ColumnDefinitions>
+									<Label Grid.Column="0" Content="???1"/>
+									<Label Grid.Column="1" Content="{Binding Equipment1}"/>
+									<Label Grid.Column="2" Content="???2"/>
+									<Label Grid.Column="3" Content="{Binding Equipment2}"/>
+									<Button Grid.Column="4" Content=" ... "
+											Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.ChoiceEquipmentCommand}"
+											CommandParameter="{Binding}"/>
+									<Label Grid.Column="5" Content="{Binding ID, Converter={StaticResource ItemIDConverter}}"/>
+									<Button Grid.Column="6" Content="Delete" HorizontalAlignment="Stretch"
+											Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.DeleteEquipmentCommand}"
+											CommandParameter="{Binding}"/>
+								</Grid>
 							</DataTemplate>
 						</ListBox.ItemTemplate>
 					</ListBox>
