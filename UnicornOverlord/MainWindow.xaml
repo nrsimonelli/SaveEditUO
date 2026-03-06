@@ -17,6 +17,7 @@
 		<local:ClassIDConverter x:Key="ClassIDConverter"/>
 		<local:ItemIDConverter x:Key="ItemIDConverter"/>
 		<local:NameIDConverter x:Key="NameIDConverter"/>
+		<local:GenericNameIDConverter x:Key="GenericNameIDConverter"/>
 	</Window.Resources>
 	<Window.DataContext>
 		<local:ViewModel/>
@@ -87,7 +88,7 @@
 						<ListBox Name="ListBoxCharacter" ItemsSource="{Binding Characters}">
 							<ListBox.ItemTemplate>
 								<DataTemplate>
-									<Label Content="{Binding Name, Converter={StaticResource NameIDConverter}}"/>
+									<Label Content="{Binding DisplayName}"/>
 								</DataTemplate>
 							</ListBox.ItemTemplate>
 						</ListBox>
@@ -205,6 +206,9 @@
 									Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.ChoiceEquipmentCommand}"
 									CommandParameter="{Binding}"/>
 									<Label Content="{Binding ID, Converter={StaticResource ItemIDConverter}}"/>
+									<Button Content="Delete"
+									Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.DeleteEquipmentCommand}"
+									CommandParameter="{Binding}"/>
 								</StackPanel>
 							</DataTemplate>
 						</ListBox.ItemTemplate>

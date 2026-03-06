@@ -42,6 +42,30 @@ namespace UnicornOverlord
 			get => SaveData.Instance().ReadNumber(mAddress + 52, 2);
 		}
 
+		public uint GenericNameIndex
+		{
+			get => SaveData.Instance().ReadNumber(mAddress + 36, 2);
+		}
+
+		public string DisplayName
+		{
+			get
+			{
+				// Try the story character name lookup first
+				var storyName = Info.Instance().Search(Info.Instance().Name, Name);
+				if (storyName != null)
+					return storyName.Name;
+
+				// Fall back to the generic name pool (offset +36)
+				var genericName = Info.Instance().Search(Info.Instance().GenericName, GenericNameIndex);
+				if (genericName != null)
+					return genericName.Name;
+
+				// Last resort: raw ID
+				return Name.ToString();
+			}
+		}
+
 		public uint Exp
 		{
 			get => SaveData.Instance().ReadNumber(mAddress + 56, 4);

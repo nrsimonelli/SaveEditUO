@@ -13,6 +13,7 @@ namespace UnicornOverlord
 		public List<NameValueInfo> Kind { get; private set; } = new List<NameValueInfo>();
 		public List<NameValueInfo> Class { get; private set; } = new List<NameValueInfo>();
 		public List<NameValueInfo> Name { get; private set; } = new List<NameValueInfo>();
+		public List<NameValueInfo> GenericName { get; private set; } = new List<NameValueInfo>();
 
 		private Info() { }
 
@@ -32,6 +33,7 @@ namespace UnicornOverlord
 			AppendList("info\\kind.txt", Kind);
 			AppendList("info\\class.txt", Class);
 			AppendList("info\\name.txt", Name);
+			AppendList("info\\generic_name.txt", GenericName);
 		}
 
 		public NameValueInfo? Search<Type>(List<Type> list, uint id)
