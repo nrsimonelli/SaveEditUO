@@ -47,11 +47,13 @@ namespace UnicornOverlord
 		public uint Equipment1
 		{
 			get => SaveData.Instance().ReadNumber(mAddress + 11, 1);
+			set => SaveData.Instance().WriteNumber(mAddress + 11, 1, value);
 		}
 
 		public uint Equipment2
 		{
 			get => SaveData.Instance().ReadNumber(mAddress + 12, 1);
+			set => SaveData.Instance().WriteNumber(mAddress + 12, 1, value);
 		}
 
 		public uint Status

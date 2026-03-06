@@ -26,6 +26,7 @@ namespace UnicornOverlord
 		public ICommand ChoiceClassCommand { get; set; }
 		public ICommand AppendItemCommand { get; set; }
 		public ICommand AppendEquipmentCommand { get; set; }
+		public ICommand DeleteEquipmentCommand { get; set; }
 		public ICommand ExportCharacterCommand { get; set; }
 		public ICommand ImportCharacterCommand { get; set; }
 		public ICommand InsertCharacterCommand { get; set; }
@@ -48,6 +49,7 @@ namespace UnicornOverlord
 			ChoiceClassCommand = new ActionCommand(ChoiceClass);
 			AppendItemCommand = new ActionCommand(AppendItem);
 			AppendEquipmentCommand = new ActionCommand(AppendEquipment);
+			DeleteEquipmentCommand = new ActionCommand(DeleteEquipment);
 			ExportCharacterCommand = new ActionCommand(ExportCharacter);
 			ImportCharacterCommand = new ActionCommand(ImportCharacter);
 			InsertCharacterCommand = new ActionCommand(InsertCharacter);
@@ -157,11 +159,6 @@ namespace UnicornOverlord
 			if (item == null) return;
 
 			ChoiceItem(ChoiceWindow.eType.eEquipment, item);
-			var info = Info.Search(Info.Kind, item.ID);
-			if (info != null)
-			{
-				item.Status = uint.Parse(info.Name);
-			}
 		}
 
 		private void ChoiceItem(ChoiceWindow.eType type, Item item)
@@ -203,6 +200,41 @@ namespace UnicornOverlord
 			Equipments.Add(item);
 		}
 
+		private void DeleteEquipment(object? parameter)
+		{
+			Item? item = parameter as Item;
+			if (item == null) return;
+
+			int removeIdx = Equipments.IndexOf(item);
+			if (removeIdx < 0) return;
+
+			// Total slot position in the combined item+equipment array
+			int totalSlots = Items.Count + Equipments.Count;
+
+			// Shift all slots after the deleted one forward by one in save data
+			for (int i = removeIdx + Items.Count; i < totalSlots - 1; i++)
+			{
+				uint srcAddr = (uint)(0xA0 + (i + 1) * 20);
+				uint dstAddr = (uint)(0xA0 + i * 20);
+				var buffer = SaveData.Instance().ReadValue(srcAddr, 20);
+				SaveData.Instance().WriteValue(dstAddr, buffer);
+			}
+
+			// Zero out the last slot (now vacated)
+			uint lastAddr = (uint)(0xA0 + (totalSlots - 1) * 20);
+			SaveData.Instance().WriteValue(lastAddr, new byte[20]);
+
+			// Rebuild the equipment collection from save data
+			Equipments.Clear();
+			for (uint i = 0; i < 3800; i++)
+			{
+				var eq = new Item(0xA0 + (uint)(Items.Count + i) * 20);
+				if (eq.Index == 0) break;
+				if (eq.Count == 0)
+					Equipments.Add(eq);
+			}
+		}
+
 		private Item? AppendItem(ChoiceWindow.eType type)
 		{
 			uint index = (uint)(Items.Count + Equipments.Count);
@@ -216,15 +248,11 @@ namespace UnicornOverlord
 			var item = new Item(0xA0 + index * 20);
 			item.ID = dlg.ID;
 			item.Index = index + 1;
+			item.Status = 4;
+			item.Equipment1 = 0xFF;
+			item.Equipment2 = 0xFF;
 
-			item.Status = 2;
-			var info = Info.Search(Info.Kind, item.ID);
-			if (info != null)
-            {
-				item.Status = uint.Parse(info.Name);
-            }
-
-            return item;
+			return item;
 		}
 
 		private void ExportCharacter(object? parameter)
