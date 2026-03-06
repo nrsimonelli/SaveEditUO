@@ -17,6 +17,7 @@ namespace UnicornOverlord
             {
                 mItemName = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ItemName)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEmpty)));
             }
         }
 
@@ -28,10 +29,16 @@ namespace UnicornOverlord
             {
                 mItemIndex = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ItemIndex)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEmpty)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasItem)));
             }
         }
 
+        // True if this slot is locked (slot 4 for unpromoted characters)
+        public bool IsLocked { get; set; }
+
         public bool IsEmpty => mItemIndex == 0;
+        public bool HasItem => mItemIndex != 0;
 
         public EquippedSlot(int slotNumber)
         {

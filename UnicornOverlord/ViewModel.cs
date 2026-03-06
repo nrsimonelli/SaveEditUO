@@ -411,12 +411,21 @@ namespace UnicornOverlord
 			}
 		}
 
+		// Class IDs that correspond to promoted classes (have access to 4 equipment slots).
+		// Derived from save file analysis; unpromoted classes only support 3 slots.
+		private static readonly HashSet<uint> PromotedClassIds = new HashSet<uint>
+		{
+			8, 10, 18, 22, 24, 28, 36, 38, 42, 43, 44, 45, 46, 47, 49, 56, 70
+		};
+
 		private void RefreshEquippedSlots()
 		{
 			EquippedSlots.Clear();
 			if (mSelectedCharacter == null) return;
 
-			// Build a lookup from item Index -> item name from the full equipment list
+			bool isPromoted = PromotedClassIds.Contains(mSelectedCharacter.Class);
+
+			// Build a lookup from item Index -> item name
 			var indexToName = new Dictionary<uint, string>();
 			foreach (var eq in Equipments)
 			{
@@ -429,7 +438,12 @@ namespace UnicornOverlord
 				uint itemIndex = mSelectedCharacter.GetEquipmentSlot(slot);
 				var equippedSlot = new EquippedSlot(slot);
 
-				if (itemIndex != 0 && indexToName.TryGetValue(itemIndex, out var name))
+				if (slot == 3 && !isPromoted)
+				{
+					equippedSlot.IsLocked = true;
+					equippedSlot.ItemName = "(promote to unlock)";
+				}
+				else if (itemIndex != 0 && indexToName.TryGetValue(itemIndex, out var name))
 				{
 					equippedSlot.ItemIndex = itemIndex;
 					equippedSlot.ItemName = name;
@@ -442,13 +456,11 @@ namespace UnicornOverlord
 		private void MorphSlot(object? parameter)
 		{
 			EquippedSlot? slot = parameter as EquippedSlot;
-			if (slot == null || slot.IsEmpty) return;
+			if (slot == null || slot.IsEmpty || slot.IsLocked) return;
 
-			// Find the Item in Equipments by its Index value
 			var item = Equipments.FirstOrDefault(e => e.Index == slot.ItemIndex);
 			if (item == null) return;
 
-			// Reuse the existing choice dialog to pick a new ID
 			var dlg = new ChoiceWindow();
 			dlg.Type = ChoiceWindow.eType.eEquipment;
 			dlg.ID = item.ID;
@@ -458,50 +470,40 @@ namespace UnicornOverlord
 			item.ID = dlg.ID;
 			item.Status = 4;
 
-			// Refresh display
 			RefreshEquippedSlots();
 		}
 
 		private void DeleteSlot(object? parameter)
 		{
 			EquippedSlot? slot = parameter as EquippedSlot;
-			if (slot == null || slot.IsEmpty) return;
+			if (slot == null || slot.IsEmpty || slot.IsLocked) return;
 
 			var item = Equipments.FirstOrDefault(e => e.Index == slot.ItemIndex);
 			if (item == null) return;
 
-			// Reuse the full delete logic
 			DeleteEquipment(item);
-
-			// Refresh display
 			RefreshEquippedSlots();
 		}
 
 		private void CreateAndEquip(object? parameter)
 		{
 			EquippedSlot? slot = parameter as EquippedSlot;
-			if (slot == null || mSelectedCharacter == null) return;
-			if (!slot.IsEmpty) return; // slot already occupied
+			if (slot == null || slot.IsLocked || !slot.IsEmpty || mSelectedCharacter == null) return;
 
 			int charIdx = Characters.IndexOf(mSelectedCharacter);
 			if (charIdx < 0) return;
 
-			// Append a new equipment item via the choice dialog
 			var item = AppendItem(ChoiceWindow.eType.eEquipment);
 			if (item == null) return;
 
-			// Set equipment ownership fields
-			item.Equipment1 = (uint)slot.SlotNumber; // slot within character (0-3)
-			item.Equipment2 = (uint)charIdx;          // character array index (0-based)
+			item.Equipment1 = (uint)slot.SlotNumber;
+			item.Equipment2 = (uint)charIdx;
 
-			// Write the item's Index into the character's slot in the save
 			uint charAddr = Util.calcCharacterAddress((uint)charIdx);
 			uint slotAddr = charAddr + 76 + (uint)(slot.SlotNumber * 4);
 			SaveData.Instance().WriteNumber(slotAddr, 4, item.Index);
 
 			Equipments.Add(item);
-
-			// Refresh display
 			RefreshEquippedSlots();
 		}
 

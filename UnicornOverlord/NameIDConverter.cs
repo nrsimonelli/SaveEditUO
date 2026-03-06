@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace UnicornOverlord
 {
@@ -39,19 +40,30 @@ namespace UnicornOverlord
 			throw new NotImplementedException();
 		}
 	}
-}
 
-namespace UnicornOverlord
-{
-    // Inverts a bool for IsEnabled bindings (empty slot = disabled buttons)
-    internal class BoolInverter : System.Windows.Data.IValueConverter
-    {
-        public static readonly BoolInverter Instance = new BoolInverter();
+	// Inverts a bool for IsEnabled bindings
+	internal class BoolInverter : IValueConverter
+	{
+		public static readonly BoolInverter Instance = new BoolInverter();
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-            => value is bool b ? !b : value;
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			=> value is bool b ? !b : value;
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-            => value is bool b ? !b : value;
-    }
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			=> value is bool b ? !b : value;
+	}
+
+	// Returns a greyed-out brush for locked slots, default foreground otherwise
+	internal class LockedBrushConverter : IValueConverter
+	{
+		public static readonly LockedBrushConverter Instance = new LockedBrushConverter();
+
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			=> value is bool isLocked && isLocked
+				? new SolidColorBrush(Colors.Gray)
+				: new SolidColorBrush(Colors.Black);
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			=> throw new NotImplementedException();
+	}
 }

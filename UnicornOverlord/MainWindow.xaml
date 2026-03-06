@@ -7,7 +7,7 @@
 		xmlns:prop="clr-namespace:UnicornOverlord.Properties"
         mc:Ignorable="d"
 		WindowStartupLocation="CenterScreen"
-        Title="Unicorn Overlord(Nintendo Switch)" Height="500" Width="700">
+        Title="Unicorn Overlord(Nintendo Switch)" Height="500" Width="850">
 	<Window.InputBindings>
 		<KeyBinding Modifiers="Ctrl" Key="O" Command="{Binding OpenFileCommand}"/>
 		<KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SaveFileCommand}"/>
@@ -154,22 +154,30 @@
 							<DockPanel>
 								<Button DockPanel.Dock="Bottom" Content="Create &amp; Equip"
 										Command="{Binding CreateAndEquipCommand}"
-										CommandParameter="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem}"/>
+										CommandParameter="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem}"
+										IsEnabled="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem.IsEmpty}"/>
 								<ListBox Name="ListBoxEquippedSlots" ItemsSource="{Binding EquippedSlots}">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
-											<StackPanel Orientation="Horizontal">
-												<Label Content="{Binding SlotLabel}" Width="45"/>
-												<Label Content="{Binding ItemName}" Width="160"/>
-												<Button Content="Morph"
+											<Grid IsEnabled="{Binding IsLocked, Converter={x:Static local:BoolInverter.Instance}}">
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="45"/>
+													<ColumnDefinition Width="*"/>
+													<ColumnDefinition Width="Auto"/>
+													<ColumnDefinition Width="Auto"/>
+												</Grid.ColumnDefinitions>
+												<Label Grid.Column="0" Content="{Binding SlotLabel}"/>
+												<Label Grid.Column="1" Content="{Binding ItemName}"
+													   Foreground="{Binding IsLocked, Converter={x:Static local:LockedBrushConverter.Instance}}"/>
+												<Button Grid.Column="2" Content="Morph"
 														Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.MorphSlotCommand}"
 														CommandParameter="{Binding}"
-														IsEnabled="{Binding IsEmpty, Converter={x:Static local:BoolInverter.Instance}}"/>
-												<Button Content="Delete"
+														IsEnabled="{Binding HasItem}"/>
+												<Button Grid.Column="3" Content="Delete"
 														Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.DeleteSlotCommand}"
 														CommandParameter="{Binding}"
-														IsEnabled="{Binding IsEmpty, Converter={x:Static local:BoolInverter.Instance}}"/>
-											</StackPanel>
+														IsEnabled="{Binding HasItem}"/>
+											</Grid>
 										</DataTemplate>
 									</ListBox.ItemTemplate>
 								</ListBox>
