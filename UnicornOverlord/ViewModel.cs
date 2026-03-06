@@ -205,33 +205,68 @@ namespace UnicornOverlord
 			Item? item = parameter as Item;
 			if (item == null) return;
 
-			int removeIdx = Equipments.IndexOf(item);
-			if (removeIdx < 0) return;
-
-			// Total slot position in the combined item+equipment array
+			// item.Index is the 1-based inventory position — use it to find exact save slot
+			uint deletedItemIndex = item.Index;
+			int saveSlot = (int)(deletedItemIndex - 1); // 0-based position in save array
 			int totalSlots = Items.Count + Equipments.Count;
 
-			// Shift all slots after the deleted one forward by one in save data
-			for (int i = removeIdx + Items.Count; i < totalSlots - 1; i++)
+			// Shift all slots after the deleted one forward by one
+			for (int i = saveSlot; i < totalSlots - 1; i++)
 			{
 				uint srcAddr = (uint)(0xA0 + (i + 1) * 20);
 				uint dstAddr = (uint)(0xA0 + i * 20);
+
+				// Read the original Index from the source BEFORE copying
+				uint srcIndex = SaveData.Instance().ReadNumber(srcAddr + 4, 4);
+
+				// Copy the whole slot
 				var buffer = SaveData.Instance().ReadValue(srcAddr, 20);
 				SaveData.Instance().WriteValue(dstAddr, buffer);
+
+				// Write the decremented Index into the destination
+				SaveData.Instance().WriteNumber(dstAddr + 4, 4, srcIndex - 1);
 			}
 
 			// Zero out the last slot (now vacated)
 			uint lastAddr = (uint)(0xA0 + (totalSlots - 1) * 20);
 			SaveData.Instance().WriteValue(lastAddr, new byte[20]);
 
-			// Rebuild the equipment collection from save data
+			// Update character equipment slot references
+			for (uint charIdx = 0; charIdx < 500; charIdx++)
+			{
+				uint charAddr = Util.calcCharacterAddress(charIdx);
+				uint charId = SaveData.Instance().ReadNumber(charAddr, 4);
+				if (charId == 0xFFFFFFFF) break;
+
+				for (uint slot = 0; slot < 4; slot++)
+				{
+					uint slotAddr = charAddr + 76 + slot * 4;
+					uint slotVal = SaveData.Instance().ReadNumber(slotAddr, 4);
+
+					if (slotVal == deletedItemIndex)
+					{
+						// This character had the deleted item equipped — clear the slot
+						SaveData.Instance().WriteNumber(slotAddr, 4, 0);
+					}
+					else if (slotVal > deletedItemIndex && slotVal != 0xFFFFFFFF)
+					{
+						// Shift reference down by 1 to match the compacted item list
+						SaveData.Instance().WriteNumber(slotAddr, 4, slotVal - 1);
+					}
+				}
+			}
+
+			// Rebuild both collections since item positions all changed
+			Items.Clear();
 			Equipments.Clear();
 			for (uint i = 0; i < 3800; i++)
 			{
-				var eq = new Item(0xA0 + (uint)(Items.Count + i) * 20);
-				if (eq.Index == 0) break;
-				if (eq.Count == 0)
-					Equipments.Add(eq);
+				var slot = new Item(0xA0 + i * 20);
+				if (slot.Index == 0) break;
+				if (slot.Count == 0)
+					Equipments.Add(slot);
+				else
+					Items.Add(slot);
 			}
 		}
 
