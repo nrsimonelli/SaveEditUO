@@ -38,6 +38,19 @@ namespace UnicornOverlord
 		public ObservableCollection<Item> Items { get; set; } = new ObservableCollection<Item>();
 		public ObservableCollection<Item> Equipments { get; set; } = new ObservableCollection<Item>();
 		public ObservableCollection<Unit> Units { get; set; } = new ObservableCollection<Unit>();
+		public ObservableCollection<EquippedSlot> EquippedSlots { get; set; } = new ObservableCollection<EquippedSlot>();
+
+		private Character? mSelectedCharacter;
+		public Character? SelectedCharacter
+		{
+			get => mSelectedCharacter;
+			set
+			{
+				mSelectedCharacter = value;
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCharacter)));
+				RefreshEquippedSlots();
+			}
+		}
 
 		public ViewModel()
 		{
@@ -389,6 +402,34 @@ namespace UnicornOverlord
 			foreach (var bond in ch.Bonds)
 			{
 				bond.Value = 1000;
+			}
+		}
+
+		private void RefreshEquippedSlots()
+		{
+			EquippedSlots.Clear();
+			if (mSelectedCharacter == null) return;
+
+			// Build a lookup from item Index -> item name from the full equipment list
+			var indexToName = new Dictionary<uint, string>();
+			foreach (var eq in Equipments)
+			{
+				var nameInfo = Info.Search(Info.Item, eq.ID);
+				indexToName[eq.Index] = nameInfo?.Name ?? eq.ID.ToString();
+			}
+
+			for (int slot = 0; slot < 4; slot++)
+			{
+				uint itemIndex = mSelectedCharacter.GetEquipmentSlot(slot);
+				var equippedSlot = new EquippedSlot(slot);
+
+				if (itemIndex != 0 && indexToName.TryGetValue(itemIndex, out var name))
+				{
+					equippedSlot.ItemIndex = itemIndex;
+					equippedSlot.ItemName = name;
+				}
+
+				EquippedSlots.Add(equippedSlot);
 			}
 		}
 

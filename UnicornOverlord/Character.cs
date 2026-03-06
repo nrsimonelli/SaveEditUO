@@ -47,6 +47,13 @@ namespace UnicornOverlord
 			get => SaveData.Instance().ReadNumber(mAddress + 36, 2);
 		}
 
+		// Returns the item Index value stored in a given equipment slot (0-3)
+		// 0 means empty
+		public uint GetEquipmentSlot(int slot)
+		{
+			return SaveData.Instance().ReadNumber(mAddress + 76 + (uint)(slot * 4), 4);
+		}
+
 		public string DisplayName
 		{
 			get
