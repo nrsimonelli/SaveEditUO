@@ -5,10 +5,10 @@
 206	Front Row
 207	Back Row
 208	Full Column
-209	Most Populated Column
-210	Least Populated Column
-211	2+ in Column
-212	3+ in Column
+209	Most Populated Row
+210	Least Populated Row
+211	2+ in Row
+212	3+ in Row
 213	Daytime
 214	Nighttime
 215	Highest HP
@@ -75,7 +75,7 @@
 276	Winged
 277	Attacked Physically
 278	Attacked by Magick
-279	Attacked by Column
+279	Attacked by Row
 280	Attacked (Full Column)
 281	Attacked by All
 282	Attacked by Infantry

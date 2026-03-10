@@ -24,34 +24,18 @@ namespace UnicornOverlord
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Build master list from Info.Skill, annotate each with active/passive badge
             foreach (var entry in Info.Instance().Skill)
             {
                 int id = (int)entry.Value;
-                bool isPassive = SkillInfo.IsPassive(id);
-                bool isActive  = SkillInfo.IsActive(id);
+                string badgeColor = SkillInfo.IsPassive(id) ? "#4A7FC1"
+                                  : SkillInfo.IsActive(id)  ? "#C13A3A"
+                                  : "#888888";
 
-                string badge;
-                string badgeColor;
-                if (isActive)
-                {
-                    badge      = "A";
-                    badgeColor = "#C13A3A";
-                }
-                else if (isPassive)
-                {
-                    badge      = "P";
-                    badgeColor = "#4A7FC1";
-                }
-                else
-                {
-                    // Unclassified (enemy/scenario skills) — neutral grey, still selectable
-                    badge      = "?";
-                    badgeColor = "#888888";
-                }
-
-                mAllEntries.Add(new SkillEntry(id, entry.Name, badge, badgeColor));
+                mAllEntries.Add(new SkillEntry(id, entry.Name, badgeColor));
             }
+
+            // Alphabetical order
+            mAllEntries.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
 
             PopulateList(string.Empty);
         }
@@ -87,6 +71,6 @@ namespace UnicornOverlord
             }
         }
 
-        private record SkillEntry(int Id, string Name, string Badge, string BadgeColor);
+        private record SkillEntry(int Id, string Name, string BadgeColor);
     }
 }
