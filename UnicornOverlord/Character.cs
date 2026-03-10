@@ -258,6 +258,26 @@ namespace UnicornOverlord
 			set => SaveData.Instance().WriteNumber(mAddress + 56, 4, value);
 		}
 
+		public uint GrowthType1
+		{
+			get => SaveData.Instance().ReadNumber(mAddress + 0x29, 1);
+			set
+			{
+				SaveData.Instance().WriteNumber(mAddress + 0x29, 1, value);
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GrowthType1)));
+			}
+		}
+
+		public uint GrowthType2
+		{
+			get => SaveData.Instance().ReadNumber(mAddress + 0x2A, 1);
+			set
+			{
+				SaveData.Instance().WriteNumber(mAddress + 0x2A, 1, value);
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GrowthType2)));
+			}
+		}
+
 		public uint Lv
 		{
 			get => SaveData.Instance().ReadNumber(mAddress + 60, 2);
