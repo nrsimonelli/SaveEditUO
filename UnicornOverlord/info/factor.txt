@@ -1,0 +1,203 @@
+# raw_idx	english
+203	None
+204	Prioritize Front Row
+205	Prioritize Back Row
+206	Front Row
+207	Back Row
+208	Full Column
+209	Most Populated Column
+210	Least Populated Column
+211	2+ in Column
+212	3+ in Column
+213	Daytime
+214	Nighttime
+215	Highest HP
+216	Lowest HP
+217	Highest HP%
+218	Lowest HP%
+219	HP ≤ 25%
+220	HP ≤ 50%
+221	HP ≤ 75%
+222	HP ≥ 25%
+223	HP ≥ 50%
+224	HP ≥ 75%
+225	HP = 100%
+226	HP < 100%
+227	Team avg HP ≤ 25%
+228	Team avg HP ≤ 50%
+229	Team avg HP ≤ 75%
+230	Team avg HP ≥ 25%
+231	Team avg HP ≥ 50%
+232	Team avg HP ≥ 75%
+233	Team avg HP = 100%
+234	Team avg HP < 100%
+235	Prioritize Buffed
+236	Prioritize Debuffed
+237	Buffed
+238	Debuffed
+239	Status Effect
+240	Poisoned
+241	Burning
+242	Frozen
+243	Stunned
+244	Blinded
+245	Passive Sealed
+246	Guard Sealed
+247	Not Buffed
+248	Not Debuffed
+249	No Status Effect
+250	Not Poisoned
+251	Not Burning
+252	Not Frozen
+253	Not Stunned
+254	Not Blinded
+255	Passive Not Sealed
+256	Guard Not Sealed
+257	Prioritize Infantry
+258	Prioritize Cavalry
+259	Prioritize Flying
+260	Prioritize Armored
+261	Prioritize Scout
+262	Prioritize Archer
+263	Prioritize Mage
+264	Prioritize Elf
+265	Prioritize Beastfolk
+266	Prioritize Winged
+267	Infantry
+268	Cavalry
+269	Flying
+270	Armored
+271	Scout
+272	Archer
+273	Mage
+274	Elf
+275	Beastfolk
+276	Winged
+277	Attacked Physically
+278	Attacked by Magick
+279	Attacked by Column
+280	Attacked (Full Column)
+281	Attacked by All
+282	Attacked by Infantry
+283	Attacked by Cavalry
+284	Attacked by Flying
+285	Attacked by Armored
+286	Attacked by Scout
+287	Attacked by Archer
+288	Attacked by Mage
+289	Attacked by Elf
+290	Attacked by Beastfolk
+291	Attacked by Winged
+292	2+ Enemies
+293	3+ Enemies
+294	4+ Enemies
+295	5+ Enemies
+296	≤1 Enemy
+297	≤2 Enemies
+298	≤3 Enemies
+299	≤4 Enemies
+300	2+ Allies
+301	3+ Allies
+302	4+ Allies
+303	5+ Allies
+304	≤1 Ally
+305	≤2 Allies
+306	≤3 Allies
+307	≤4 Allies
+308	Own HP ≤ 25%
+309	Own HP ≤ 50%
+310	Own HP ≤ 75%
+311	Own HP ≥ 25%
+312	Own HP ≥ 50%
+313	Own HP ≥ 75%
+314	Own HP = 100%
+315	Own HP < 100%
+316	Highest AP
+317	Lowest AP
+318	AP = 0
+319	AP ≤ 1
+320	AP ≤ 2
+321	AP ≤ 3
+322	AP ≥ 1
+323	AP ≥ 2
+324	AP ≥ 3
+325	AP ≥ 4
+326	Highest PP
+327	Lowest PP
+328	PP = 0
+329	PP ≤ 1
+330	PP ≤ 2
+331	PP ≤ 3
+332	PP ≥ 1
+333	PP ≥ 2
+334	PP ≥ 3
+335	PP ≥ 4
+336	Own AP = 0
+337	Own AP ≤ 1
+338	Own AP ≤ 2
+339	Own AP ≤ 3
+340	Own AP ≥ 1
+341	Own AP ≥ 2
+342	Own AP ≥ 3
+343	Own AP ≥ 4
+344	Own PP = 0
+345	Own PP ≤ 1
+346	Own PP ≤ 2
+347	Own PP ≤ 3
+348	Own PP ≥ 1
+349	Own PP ≥ 2
+350	Own PP ≥ 3
+351	Own PP ≥ 4
+352	Self
+353	Exclude Self
+354	Self Buffed
+355	Self Debuffed
+356	1st Action
+357	2nd Action
+358	3rd Action
+359	4th Action
+360	5th Action
+361	Enemy Infantry
+362	Enemy Cavalry
+363	Enemy Flying
+364	Enemy Armored
+365	Enemy Scout
+366	Enemy Archer
+367	Enemy Mage
+368	Enemy Elf
+369	Enemy Beastfolk
+370	Enemy Winged
+371	No Enemy Infantry
+372	No Enemy Cavalry
+373	No Enemy Flying
+374	No Enemy Armored
+375	No Enemy Scout
+376	No Enemy Archer
+377	No Enemy Mage
+378	No Enemy Elf
+379	No Enemy Beastfolk
+380	No Enemy Winged
+381	Highest Max HP
+382	Highest Max AP
+383	Highest Max PP
+384	Highest Phys ATK
+385	Highest Mag ATK
+386	Highest Phys DEF
+387	Highest Mag DEF
+388	Highest Initiative
+389	Highest Accuracy
+390	Highest Evasion
+391	Highest Crit Rate
+392	Highest Guard Rate
+393	Lowest Max HP
+394	Lowest Max AP
+395	Lowest Max PP
+396	Lowest Phys ATK
+397	Lowest Mag ATK
+398	Lowest Phys DEF
+399	Lowest Mag DEF
+400	Lowest Initiative
+401	Lowest Accuracy
+402	Lowest Evasion
+403	Lowest Crit Rate
+404	Lowest Guard Rate

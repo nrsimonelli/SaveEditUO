@@ -1,0 +1,444 @@
+# Skill names for tactic display
+# Format: skill_id<TAB>name
+# skill_id = index in message table (43-562 for A/P skills)
+43	Lean Edge
+44	Cavalry Slayer
+45	Spinning Edge
+46	Astral Blade
+47	Warding Slash
+48	Shield Bash
+49	Defender
+50	Keen Edge
+51	Impale
+52	Passive Steal
+53	Active Steal
+54	Toxic Throw
+55	Shadowbite
+56	Meteor Slash
+57	Lightning Blade
+58	Mirage Stab
+59	Heavy Slash
+60	Killing Chain
+61	Bastard&apos;s Cross
+62	Finishing Stab
+63	Decimate
+64	Wild Fang
+65	Spiral Sword
+66	Shield Smite
+67	Honed Slash
+68	Impulse
+69	Hache
+70	Saint&apos;s Blade
+71	Slice
+72	Divine Cross
+73	Vertical Edge
+74	Iron Crusher
+75	Brandish
+76	Burning Edge
+77	Inferno
+78	Long Thrust
+79	Javelin
+80	Flame Javelin
+81	Honed Spear
+82	Assaulting Lance
+83	Wild Rush
+84	Pile Thrust
+85	Sting
+86	Piercing Lance
+87	Passive Hold
+88	Venom Thrust
+89	Diving Thrust
+90	Fire Breath
+91	Tempest Drive
+92	Dragoon Dive
+93	Heavy Smash
+94	Assaulting Blow
+95	Row Smash
+96	Ground Strike
+97	High Swing
+98	Aerial Smite
+99	Fatal Dive
+100	Carnage
+101	Vicious Torment
+102	Death Spin
+103	Bear Crush
+104	Round Swing
+105	Earthshaker
+106	Smash
+107	Rolling Axe
+108	Wide Breaker
+109	Vengeful Axe
+110	Venom Axe
+111	Dark Flame
+112	Desperation
+113	Wide Smash
+114	Grand Smash
+115	Brutal Swing
+116	Brutal Drive
+117	Fallen One
+118	Dark Armor
+119	Extinction
+120	Chaos Unending
+121	Flame Thrust
+122	Deadly Rush
+123	Primus Edge
+124	Thunderous Thrust
+125	Freezing Thrust
+126	Elemental Roar
+127	Banishing Stab
+128	Leaping Slash
+129	Provoking Slash
+130	Poison Slash
+131	Fire Slash
+132	Grisly Poison
+133	Grisly Fire
+134	Firestorm
+135	Icestorm
+136	Sonic Blast
+137	Double Blast
+138	Assassin&apos;s Nail
+139	Crush
+140	Spiked Blow
+141	Icy Blow
+142	Icy Crush
+143	True Thrust
+144	Icicle Dart
+145	Shadow Thrust
+146	Lightning Shaker
+147	Penetrate
+148	Lethal Venom
+149	Rampage
+150	Execution
+151	Powerful Impact
+152	Demolition
+153	Heavy Smash
+154	Painful Smash
+155	Banishing Smite
+156	Sanguine Attack
+157	Magick Attack
+158	Phantom Attack
+159	Elfslayer
+160	Beastslayer
+161	Strength Shatter
+162	Strength Shatter II
+163	Armor Shatter
+164	Armor Shatter II
+165	Magick Shatter
+166	Active Shatter
+167	Passive Shatter
+168	Passive Shatter (Spear)
+169	Single Shot
+170	Dual Shot
+171	Row Shot
+172	Triple Shatter
+173	Arrow Rain
+174	Glacial Rain
+175	Mystic Arrow
+176	Sonic Shaft
+177	Checkmate
+178	Poison Arrow
+179	Flame Arrow
+180	Shadow Arrow
+181	Wind Arrow
+182	Icicle Arrow
+183	Delaying Shot
+184	Saint&apos;s Shot
+185	Photon Arrow
+186	Power Bolt
+187	Toxic Bolt
+188	Heavy Bolt
+189	Harpoon Bolt
+190	Spiked Bolt
+191	Fireball
+192	Icebolt
+193	Magick Missile
+194	Ice Coffin
+195	Aqua Venom
+196	Maelstrom
+197	Thunderous Strike
+198	Volcano
+199	Holy Light
+200	Innocent Ray
+201	Sanguine Darts
+202	Skyward Thrust
+203	Earthquake
+204	Blizzard
+205	Gravity
+206	Trinity Rain
+207	Sanguine Rain
+208	Passive Absorb
+209	Memento Mori
+210	Unicorn&apos;s Wrath
+211	Heal
+212	Double Heal
+213	Row Heal
+214	Sacred Heal
+215	Circle Heal
+216	Radiant Heal
+217	Active Heal
+218	Extra Heal
+219	Overheal
+220	Limited Heal
+221	Faerie Heal
+222	Aurora Veil
+223	Phantom Veil
+224	Curing Call
+225	Healing Wind
+226	Honed Healing
+227	Holy Cradle
+228	Resurrection
+229	Reincarnation
+230	Animated Dead
+231	Night Vision
+232	Glowing Light
+233	Offensive Order
+234	Defensive Order
+235	Passive Curse
+236	Poison Curse
+237	Fire Curse
+238	Offensive Curse
+239	Defensive Curse
+240	Compounding Curse
+241	Dispel All
+242	Sandstorm
+243	Sorcerous Blow
+244	Cursed Strike
+245	Holy Smite
+246	Wall
+247	Bulwark
+248	Magick Wall
+249	Row Protection
+250	Row Resistance
+251	Greatshield
+252	Mystic Shield
+253	Dark Mist
+254	Mounting Charge
+255	Nature&apos;s Wrath
+256	Sylphic Wind
+257	Mystic Conferral
+258	Omega Shatter
+259	Wyrmcleave
+260	Blitz Rush
+261	Heavens Asunder
+262	Honed Shield
+263	Bunker Stance
+264	Impetus Stance
+265	War Cry
+266	Magick Shell
+267	Dark Armor
+268	Darkness Armor
+269	Hastened Charge
+270	Quick Action
+271	Hastened Action
+272	Quick Cast
+273	Hastened Cast
+274	Rapid Order
+275	Dawn Horn
+276	War Horn
+277	Provoke
+278	Provoking Wall
+279	Scornful Dead
+280	Dragon&apos;s Roar
+281	Hastened Curse
+282	Cursed Swamp
+283	Eye of the Warrior Princess
+284	Ominous Wall
+285	Animated Dead
+286	Heavy Alignment
+287	Aerial Alignment
+288	United Front
+289	Wolf Pack
+290	Bear&apos;s Den
+291	Iron Veil
+292	Pure Field
+293	Reheal
+294	Divine Blessing
+295	Hastened Heal
+296	Boon of the Faeries
+297	Hastened Strike
+298	Artenie Strike
+299	Nocturnal Strike
+300	Sneaking Edge
+301	Rapid Shot
+302	Hastened Shatter
+303	Provoking Strike
+304	Rage of the Faeries
+305	Ground Punisher
+306	Parting Blow
+307	Fire Burst
+308	Poison Burst
+309	Life Blow
+310	Parting Death
+311	Judgment
+312	First Aid
+313	Medical Aid
+314	Party Aid
+315	Wing Rest
+316	Parting Resurrection
+317	Charged Impetus
+318	Bull Force
+319	Demonic Pact
+320	Elemental Impetus
+321	Diurnal Impetus
+322	Nocturnal Impetus
+323	Grave Impetus
+324	Blade Dance
+325	Tailwind
+326	Quick Reload
+327	Nocturnal Rest
+328	Concentrate
+329	Recast
+330	Bestral Howl
+331	Cavalier Call
+332	Feathering
+333	Undying Will
+334	Eagle Eye
+335	Hawk Eye
+336	Inner Balance
+337	Aerial Wing
+338	Discharge
+339	Binding Guard
+340	Sanguine Arts
+341	Passive Gift
+342	Restore
+343	Active Gift
+344	Quick Impetus
+345	Bulk Up
+346	Berserk
+347	Accelerate
+348	Counter
+349	Ground Counter
+350	Heavy Counter
+351	Following Slash
+352	Aerial Snipe
+353	Frenzied Strike
+354	Vanitas
+355	Enrage
+356	Maiden&apos;s Hammer
+357	Magick Counter
+358	Banishing Counter
+359	Phantom Counter
+360	Wide Counter
+361	Triple Counter
+362	Vanquish
+363	Magick Burst
+364	Phantom Kick
+365	Poison Touch
+366	Venom Touch
+367	Phalanx Shift
+368	Aerial Shift
+369	Self-Care
+370	Quick Heal
+371	Curing Heal
+372	Relic Heal
+373	Selfless Heal
+374	Passive Miracle
+375	Lifeshare
+376	Poison Cure
+377	Fire Cure
+378	Freeze Cure
+379	Stun Cure
+380	Blind Cure
+381	Guard Cure
+382	Passive Cure
+383	Refresh
+384	Quick Cure
+385	Sacred Cure
+386	Quick Dispel
+387	Abyssal Miasma
+388	Remove Weakness
+389	Cursed Impetus
+390	Mirror Weakness
+391	Pursuit
+392	Magick Pursuit
+393	Knight&apos;s Pursuit
+394	Aerial Pursuit
+395	Banishing Pursuit
+396	Wide Pursuit
+397	Shattering Pursuit
+398	Snow-white Strike
+399	Sanguine Pursuit
+400	Killing Pursuit
+401	Shadow Pursuit
+402	Healing Pursuit
+403	Healing Hunter
+404	Guard Hunter
+405	Wild Kick
+406	Weakness Hunter
+407	Reflect Magick
+408	Quick Curse
+409	Cursed Gaol
+410	Shining Light
+411	Preemptive Heal
+412	Holy Breath
+413	Sorcerous Connection
+414	Focus Sight
+415	Sniping Order
+416	Keen Call
+417	Powerful Call
+418	Inspiration
+419	Wide Inspiration
+420	Reinforce
+421	Sylphic Barrier
+422	Grant Evade
+423	Quick Barrier
+424	Protection
+425	Circle Barrier
+426	Holy Barrier
+427	Saint&apos;s Barrier
+428	Magick Barrier
+429	Row Barrier
+430	Mighty Shield
+431	Celestial Light
+432	Quick Cover
+433	Heavy Cover
+434	Enduring Cover
+435	Hastened Cover
+436	Row Cover
+437	Arrow Cover
+438	Radiant Cover
+439	Luminous Cover
+440	Aid Cover
+441	Advance Cover
+442	Evil Cover
+443	Sacrifice
+444	Guard Order
+445	Magick Conferral
+446	Flame Conferral
+447	Ice Conferral
+448	Thunderous Conferral
+449	Sanguine Conferral
+450	Dark Conferral
+451	Toughness
+452	Lifesaver
+453	Painbringer
+454	Vengeance
+455	Nimble Fighter
+456	Guarding Fighter
+457	Guardian
+458	Vengeful Impetus
+459	Guarding Impetus
+460	Evasive Impetus
+461	Quick Guard
+462	Heavy Guard
+463	Enduring Guard
+464	Cavalry Guard
+465	Aerial Guard
+466	Bestral Guard
+467	Noble Guard
+468	Royal Guard
+469	Vengeful Guard
+470	Holy Guard
+471	Diurnal Guard
+472	Nocturnal Guard
+473	Undead Wall
+474	Invincible
+475	Evade
+476	Phantom Step
+477	Dynamic Glide
+478	Nocturnal Evade
+479	Dark Step
+480	Gryphon Glide
+481	Deflect
+482	Parry
+483	Magick Conversion

@@ -1,0 +1,59 @@
+# Tactic condition table (from UcBuffList.fms indices 0-56)
+# Format: index<TAB>name
+0	None
+1	Own HP = 100%
+2	Own HP ≥ Threshold
+3	Own HP < Threshold
+4	Self in Front Row
+5	Self in Back Row
+6	Self is Buffed
+7	User has Faeries
+8	Target Defeated
+9	Attack Hit
+10	Attack was Critical
+11	Infantry Ally
+12	Cavalry Ally
+13	Flying Ally
+14	Armored Ally
+15	Mage Ally
+16	Elf Ally
+17	Beastfolk Ally
+18	Winged Ally
+19	Grounded Ally
+20	Target HP = 100%
+21	Target HP ≥ Threshold
+22	Target HP < Threshold
+23	Target is Buffed
+24	Target is Debuffed
+25	Target has Status Effect
+26	Target is Poisoned
+27	Target is Burning
+28	Target is Frozen
+29	Target is Stunned
+30	Target in Front Row
+31	Target in Back Row
+32	Target is Infantry
+33	Target is Cavalry
+34	Target is Flying
+35	Target is Armored
+36	Target is Armored or Cavalry
+37	Target is Mage
+38	Target is Elf
+39	Target is Beastfolk
+40	Target is Grounded
+41	Attacked by Cavalry
+42	Attacked by Flying
+43	Attacked by Beastfolk
+44	Assist Attack
+45	Physical Assist Attack
+46	Magical Assist Attack
+47	Daytime
+48	Nighttime
+49	Enemy Leader uses Sword
+50	Enemy Leader uses Axe
+51	Enemy Leader uses Spear
+52	Enemy Leader uses Bow
+53	Enemy Leader uses Staff
+54	Enemy Leader uses Shield
+55	Enemy Leader is Cavalry
+56	Enemy Leader is Flying
