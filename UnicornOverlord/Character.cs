@@ -110,6 +110,129 @@ namespace UnicornOverlord
 			}
 		}
 
+		// ── Tactic array write helpers ────────────────────────────────────────────
+
+		// Maximum number of tactic entries the game supports per character.
+		public const int MaxTacticEntries = 8;
+
+		// Returns the count of active (non-empty, non-PP-locked) tactic entries.
+		// unusable==2 entries are empty PP-locked placeholder slots — excluded.
+		public int GetTacticEntryCount()
+		{
+			int count = 0;
+			for (int i = 0; i < 16; i++)
+			{
+				var (skillId, isValid, isUnusable, _, _) = GetTacticRaw(i);
+				if (isUnusable == 2) continue;          // PP-locked placeholder
+				if (skillId == 0 && isUnusable == 0) break; // end of array
+				count++;
+			}
+			return count;
+		}
+
+		// Inserts a new tactic entry at raw array index insertAt, shifting all
+		// subsequent entries down by one. Writes the new skill with zero conditions.
+		// Caller is responsible for choosing the correct insertAt index.
+		//
+		// For class skills (isClassSkill=true):  writes sid=slotOrAbsoluteId, isValid=-1, isUnusable=0
+		// For injected skills (isClassSkill=false): writes sid=(skillId-15), isValid from SkillInfo, isUnusable=4
+		//
+		// Condition storage (one-behind rule):
+		//   The new entry's conditions will be stored in the slot before it.
+		//   We zero those out so the new entry starts with no conditions.
+		//   The entry that was previously at insertAt-1 had its CondA/CondB pointing
+		//   to the old entry[insertAt]'s conditions — those are preserved in the shift.
+		public void InsertTacticEntry(int insertAt, int skillId, bool isClassSkill, int classSlotId = 0)
+		{
+			// Read all 16 entries first
+			var entries = new (uint sid, int isValid, uint isUnusable, uint condA, uint condB)[16];
+			for (int i = 0; i < 16; i++)
+				entries[i] = GetTacticRaw(i);
+
+			// Shift entries from insertAt..14 down by one (entry 15 is discarded)
+			for (int i = 15; i > insertAt; i--)
+				entries[i] = entries[i - 1];
+
+			// Build the new entry
+			uint newSid;
+			int  newIsValid;
+			uint newIsUnusable;
+
+			if (isClassSkill)
+			{
+				newSid        = (uint)classSlotId;
+				newIsValid    = -1;
+				newIsUnusable = 0;
+			}
+			else
+			{
+				newSid        = (uint)(skillId - 15);
+				newIsValid    = SkillInfo.GetIsValid(skillId);
+				newIsUnusable = 4;
+			}
+
+			entries[insertAt] = (newSid, newIsValid, newIsUnusable, 0, 0);
+
+			// Write all 16 entries back
+			for (int i = 0; i < 16; i++)
+			{
+				uint base_ = mAddress + 96 + (uint)(i * 16);
+				SaveData.Instance().WriteNumber(base_ + 0,  2, entries[i].sid);
+				SaveData.Instance().WriteNumber(base_ + 4,  2, (uint)(short)entries[i].isValid);
+				SaveData.Instance().WriteNumber(base_ + 8,  4, entries[i].isUnusable);
+				SaveData.Instance().WriteNumber(base_ + 12, 2, entries[i].condA);
+				SaveData.Instance().WriteNumber(base_ + 14, 2, entries[i].condB);
+			}
+
+			// Zero out conditions for the new entry.
+			// Under the one-behind rule, new entry[insertAt]'s conditions live in
+			// the slot before it: charAddr+92 if insertAt==0, else entry[insertAt-1].CondA/B.
+			SetTacticConditions(insertAt, 0, 0);
+		}
+
+		// Deletes the tactic entry at raw array index deleteAt, shifting all subsequent
+		// entries up by one. The vacated last slot is zeroed. Conditions for the
+		// deleted entry are cleared, and all condition associations are preserved
+		// for the remaining entries since we shift both entries and their trailing condA/B.
+		public void DeleteTacticEntry(int deleteAt)
+		{
+			var entries = new (uint sid, int isValid, uint isUnusable, uint condA, uint condB)[16];
+			for (int i = 0; i < 16; i++)
+				entries[i] = GetTacticRaw(i);
+
+			// Before shifting, capture the conditions stored FOR the entry being deleted.
+			// Those live in the preceding slot (or charAddr+92 for index 0).
+			// After deletion we need to propagate them correctly.
+			// Actually: we just shift entries up. The condA/condB of each entry are
+			// the conditions for the NEXT entry — so shifting preserves all associations
+			// except for deleteAt-1's condA/B which pointed to deleteAt's conditions.
+			// We clear those since the deleted entry no longer exists.
+
+			// Shift entries up
+			for (int i = deleteAt; i < 15; i++)
+				entries[i] = entries[i + 1];
+
+			// Zero the last slot
+			entries[15] = (0, 0, 0, 0, 0);
+
+			// Write all back
+			for (int i = 0; i < 16; i++)
+			{
+				uint base_ = mAddress + 96 + (uint)(i * 16);
+				SaveData.Instance().WriteNumber(base_ + 0,  2, entries[i].sid);
+				SaveData.Instance().WriteNumber(base_ + 4,  2, (uint)(short)entries[i].isValid);
+				SaveData.Instance().WriteNumber(base_ + 8,  4, entries[i].isUnusable);
+				SaveData.Instance().WriteNumber(base_ + 12, 2, entries[i].condA);
+				SaveData.Instance().WriteNumber(base_ + 14, 2, entries[i].condB);
+			}
+
+			// Clear the conditions that were stored FOR the deleted entry
+			// (they lived in the slot before deleteAt, which is now the slot before
+			// what was deleteAt+1 — i.e. still deleteAt-1 / charAddr+92).
+			// We zero them since the entry they belonged to is gone.
+			SetTacticConditions(deleteAt, 0, 0);
+		}
+
 		public string DisplayName
 		{
 			get

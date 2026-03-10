@@ -38,6 +38,8 @@ namespace UnicornOverlord
 		public ICommand CreateAndEquipCommand { get; set; }
 		public ICommand EditCondition1Command { get; set; }
 		public ICommand EditCondition2Command { get; set; }
+		public ICommand AddSkillCommand { get; set; }
+		public ICommand DeleteTacticEntryCommand { get; set; }
 
 		public Basic Basic { get; set; } = new Basic();
 		public ObservableCollection<Character> Characters { get; set; } = new ObservableCollection<Character>();
@@ -57,6 +59,7 @@ namespace UnicornOverlord
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCharacter)));
 				RefreshEquippedSlots();
 				RefreshTacticEntries();
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddSkill)));
 			}
 		}
 
@@ -81,6 +84,8 @@ namespace UnicornOverlord
 			CreateAndEquipCommand = new ActionCommand(CreateAndEquip);
 			EditCondition1Command = new ActionCommand(EditCondition1);
 			EditCondition2Command = new ActionCommand(EditCondition2);
+			AddSkillCommand = new ActionCommand(AddSkill);
+			DeleteTacticEntryCommand = new ActionCommand(DeleteTacticEntry);
 		}
 
 		private void Initialize()
@@ -557,7 +562,7 @@ namespace UnicornOverlord
 			// cls=23 Thief
 			[23] = new() { [3]=52,  [4]=54,  [7]=475},
 			// cls=24 Rogue          (base=Thief + Shadowbite lv20, Active Steal lv30, Sneaking Edge lv25p)
-			[24] = new() { [3]=52,  [4]=54,  [5]=55, [6]=53,  [7]=475, [8]=300 },
+			[24] = new() { [3]=52,  [4]=54,  [5]=55,  [6]=53,  [7]=475, [8]=300 },
 			// cls=25 Knight
 			[25] = new() { [3]=82,  [4]=83,  [7]=461, [8]=331 },
 			// cls=26 Great Knight   (base=Knight + Pile Thrust lv20, Knight's Pursuit lv25p)
@@ -692,7 +697,7 @@ namespace UnicornOverlord
 			// Class-relative slot IDs (1–9) and empty entries (sid==0) are unchanged.
 			//
 			// ── Active vs passive ────────────────────────────────────────────
-			// Class entries:   slot 3/4/5/6 = active (red badge), 7/8/9/10 = passive (blue)
+			// Class entries:   slot 3/4/5 = active (red badge), 7/8/9 = passive (blue)
 			// Item entries:    isValid==0 = active item skill, isValid==2 = passive item skill
 
 			// Seed "previous" conditions from charAddr+92 (the slot before entry[0])
@@ -737,7 +742,10 @@ namespace UnicornOverlord
 				if (isValid != -1) continue; // skip inactive / empty entries
 				if (skillId == 0) continue;  // skip bare Standard Attack rows
 
-				bool isActive = skillId < 7; // slots 7-9 = passive
+				// Active slots are 3–6 (passive slots are 7–9).
+				// Rather than hardcoding a range, we ask the slot dict: if the slot
+				// number is < 7 it's an active skill, >= 7 it's passive.
+				bool isActive = skillId < 7;
 
 				string action = skillId <= 9
 					? ResolveClassSlot(classId, (int)skillId)
@@ -791,6 +799,104 @@ namespace UnicornOverlord
 			uint newB = dlg.ConditionValue;
 			mSelectedCharacter.SetTacticConditions(entry.ArrayIndex, entry.CondA, newB);
 			RefreshTacticEntries();
+		}
+
+		/// <summary>
+		/// True when the Add Skill button should be enabled.
+		/// Disabled when no character is selected or all 8 tactic slots are occupied.
+		/// </summary>
+		public bool CanAddSkill =>
+			mSelectedCharacter != null &&
+			TacticEntries.Count < Character.MaxTacticEntries;
+
+		private void AddSkill(object? parameter)
+		{
+			if (mSelectedCharacter == null) return;
+			if (TacticEntries.Count >= Character.MaxTacticEntries) return;
+
+			var dlg = new SkillWindow { Owner = Application.Current.MainWindow };
+			if (dlg.ShowDialog() != true) return;
+
+			int skillId = dlg.SkillId;
+			if (skillId <= 0) return;
+
+			int classId = (int)mSelectedCharacter.Class;
+			bool isClassSkill = false;
+			int  classSlotId  = 0;
+
+			// Check if this skill belongs to the character's class slot table
+			if (ClassSkillSlots.TryGetValue(classId, out var slots))
+			{
+				foreach (var kv in slots)
+				{
+					if (kv.Value == skillId)
+					{
+						isClassSkill = true;
+						classSlotId  = kv.Key;
+						break;
+					}
+				}
+			}
+
+			// Determine active vs passive for insertion point
+			bool isPassive = isClassSkill
+				? classSlotId >= 7
+				: SkillInfo.IsPassive(skillId);
+
+			// Find insertion index:
+			//   Active  → after the last active entry (or 0 if none)
+			//   Passive → after the last passive entry (or after last active if no passives yet)
+			int insertAt = FindInsertIndex(isPassive);
+
+			mSelectedCharacter.InsertTacticEntry(insertAt, skillId, isClassSkill, classSlotId);
+			RefreshTacticEntries();
+
+			// Notify button state
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddSkill)));
+		}
+
+		/// <summary>
+		/// Returns the raw array index at which to insert a new entry.
+		/// For actives: one past the last active entry in the display list.
+		/// For passives: one past the last passive entry, or one past the last active if no passives exist.
+		/// </summary>
+		private int FindInsertIndex(bool isPassive)
+		{
+			int lastActive  = -1;
+			int lastPassive = -1;
+
+			foreach (var entry in TacticEntries)
+			{
+				if (entry.IsActiveSkill)
+					lastActive  = entry.ArrayIndex;
+				else
+					lastPassive = entry.ArrayIndex;
+			}
+
+			if (!isPassive)
+			{
+				// Insert after last active; if no actives yet, insert at position 0
+				return lastActive >= 0 ? lastActive + 1 : 0;
+			}
+			else
+			{
+				// Insert after last passive; fall back to after last active; fall back to 0
+				if (lastPassive >= 0) return lastPassive + 1;
+				if (lastActive  >= 0) return lastActive  + 1;
+				return 0;
+			}
+		}
+
+		private void DeleteTacticEntry(object? parameter)
+		{
+    if (parameter is not TacticEntry entry) return;
+    if (mSelectedCharacter == null) return;
+
+    mSelectedCharacter.DeleteTacticEntry(entry.ArrayIndex);
+    RefreshTacticEntries();
+
+    // Notify button state
+    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddSkill)));
 		}
 
 		private void MorphSlot(object? parameter)

@@ -56,5 +56,13 @@ namespace UnicornOverlord
 
 		/// <summary>Badge colour: red for active skills, blue for passive skills.</summary>
 		public string BadgeColor => IsActiveSkill ? "#C13A3A" : "#4A7FC1";
+
+		/// <summary>
+		/// True when this entry is an item skill (isUnusable == 4).
+		/// </summary>
+		public bool IsItemSkill => IsUnusable == 4;
+
+		/// <summary>All slotted skills are deletable — the player put them there.</summary>
+		public bool IsDeletable => true;
 	}
 }

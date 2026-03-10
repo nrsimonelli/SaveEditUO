@@ -18,6 +18,7 @@
 		<local:ItemIDConverter x:Key="ItemIDConverter"/>
 		<local:NameIDConverter x:Key="NameIDConverter"/>
 		<local:GenericNameIDConverter x:Key="GenericNameIDConverter"/>
+		<local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 	</Window.Resources>
 	<Window.DataContext>
 		<local:ViewModel/>
@@ -200,6 +201,7 @@
 											<ColumnDefinition Width="150"/>
 											<ColumnDefinition Width="*"/>
 											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="52"/>
 										</Grid.ColumnDefinitions>
 										<Label Grid.Column="0" Content="Action" FontWeight="SemiBold" Foreground="Gray" Padding="4,1" FontSize="11"/>
 										<Label Grid.Column="1" Content="Condition 1" FontWeight="SemiBold" Foreground="Gray" Padding="4,1" FontSize="11"/>
@@ -217,6 +219,7 @@
 														<ColumnDefinition Width="150"/>
 														<ColumnDefinition Width="*"/>
 														<ColumnDefinition Width="*"/>
+														<ColumnDefinition Width="52"/>
 													</Grid.ColumnDefinitions>
 
 													<!-- Col 0: [●] Skill name -->
@@ -264,10 +267,30 @@
 															ToolTip="Click to change Condition 2"
 															Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.EditCondition2Command}"
 															CommandParameter="{Binding}"/>
+
+													<!-- Col 3: Delete — hidden for item skills -->
+													<Button Grid.Column="3"
+															Content="Delete"
+															FontSize="10"
+															Padding="2,1"
+															Margin="2,0,0,0"
+															Visibility="{Binding IsDeletable, Converter={x:Static local:BoolToVisibilityConverter.Instance}}"
+															ToolTip="Remove this skill slot"
+															Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.DeleteTacticEntryCommand}"
+															CommandParameter="{Binding}"/>
 												</Grid>
 											</DataTemplate>
 										</ItemsControl.ItemTemplate>
 									</ItemsControl>
+
+									<!-- Add Skill button -->
+									<Button Content="+ Add Skill"
+											Margin="4,4,4,2"
+											HorizontalAlignment="Left"
+											Padding="8,3"
+											IsEnabled="{Binding CanAddSkill}"
+											ToolTip="Add a new skill to this character's tactics (max 8)"
+											Command="{Binding AddSkillCommand}"/>
 
 								</StackPanel>
 							</ScrollViewer>

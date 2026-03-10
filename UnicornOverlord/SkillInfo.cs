@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SaveEditUO
+namespace UnicornOverlord
 {
     /// <summary>
     /// Authoritative active/passive classification for all known skill IDs.
