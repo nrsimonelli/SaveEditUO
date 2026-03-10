@@ -73,7 +73,7 @@ namespace UnicornOverlord
 
 			foreach (var item in items)
 			{
-				if (String.IsNullOrEmpty(filter) || item.Name.IndexOf(filter) >= 0)
+				if (String.IsNullOrEmpty(filter) || item.Name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0)
 				{
 					if (Type == eType.eItem)
 					{
