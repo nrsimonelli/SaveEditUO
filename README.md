@@ -1,14 +1,14 @@
-![DL Count](https://img.shields.io/github/downloads/nrsimonelli/SaveEditUO/total.svg)
-
 # Unicorn Overlord — Save Data Editor
+
+![DL Count](https://img.shields.io/github/downloads/nrsimonelli/SaveEditUO/total.svg)
 
 Nintendo Switch save data editor for **Unicorn Overlord**.  
 Fork of [turtle-insect/UnicornOverlord](https://github.com/turtle-insect/UnicornOverlord) with additional features.
 
 ## Links
 
-- **Game portal:** https://unicorn-overlord.com/
-- **Switch (JP eShop):** https://store-jp.nintendo.com/list/software/70010000058315.html
+- **Game portal:** <https://unicorn-overlord.com/>
+- **Switch (JP eShop):** <https://store-jp.nintendo.com/list/software/70010000058315.html>
 
 ## Requirements
 
