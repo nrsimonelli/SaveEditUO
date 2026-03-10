@@ -151,38 +151,126 @@
 					</Grid>
 					<TabControl Grid.Column="2">
 						<TabItem Header="Equipment">
-							<DockPanel>
-								<Button DockPanel.Dock="Bottom" Content="Create &amp; Equip"
-										Command="{Binding CreateAndEquipCommand}"
-										CommandParameter="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem}"
-										IsEnabled="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem.CanCreate, FallbackValue=False, TargetNullValue=False}"/>
-								<ListBox Name="ListBoxEquippedSlots" ItemsSource="{Binding EquippedSlots}"
-										 HorizontalContentAlignment="Stretch">
-									<ListBox.ItemTemplate>
-										<DataTemplate>
-											<Grid IsEnabled="{Binding IsLocked, Converter={x:Static local:BoolInverter.Instance}}">
-												<Grid.ColumnDefinitions>
-													<ColumnDefinition Width="45"/>
-													<ColumnDefinition Width="*"/>
-													<ColumnDefinition Width="50"/>
-													<ColumnDefinition Width="50"/>
-												</Grid.ColumnDefinitions>
-												<Label Grid.Column="0" Content="{Binding SlotLabel}"/>
-												<Label Grid.Column="1" Content="{Binding ItemName}"
-													   Foreground="{Binding IsLocked, Converter={x:Static local:LockedBrushConverter.Instance}}"/>
-												<Button Grid.Column="2" Content="Morph" HorizontalAlignment="Stretch"
-														Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.MorphSlotCommand}"
-														CommandParameter="{Binding}"
-														IsEnabled="{Binding HasItem}"/>
-												<Button Grid.Column="3" Content="Delete" HorizontalAlignment="Stretch"
-														Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.DeleteSlotCommand}"
-														CommandParameter="{Binding}"
-														IsEnabled="{Binding HasItem}"/>
-											</Grid>
-										</DataTemplate>
-									</ListBox.ItemTemplate>
-								</ListBox>
-							</DockPanel>
+							<!-- ── Equipment slots + Tactics in one scrollable panel ── -->
+							<ScrollViewer VerticalScrollBarVisibility="Auto">
+								<StackPanel>
+
+									<!-- Equipment slots -->
+									<ListBox Name="ListBoxEquippedSlots" ItemsSource="{Binding EquippedSlots}"
+											 HorizontalContentAlignment="Stretch"
+											 BorderThickness="0">
+										<ListBox.ItemTemplate>
+											<DataTemplate>
+												<Grid IsEnabled="{Binding IsLocked, Converter={x:Static local:BoolInverter.Instance}}">
+													<Grid.ColumnDefinitions>
+														<ColumnDefinition Width="45"/>
+														<ColumnDefinition Width="*"/>
+														<ColumnDefinition Width="50"/>
+														<ColumnDefinition Width="50"/>
+													</Grid.ColumnDefinitions>
+													<Label Grid.Column="0" Content="{Binding SlotLabel}"/>
+													<Label Grid.Column="1" Content="{Binding ItemName}"
+														   Foreground="{Binding IsLocked, Converter={x:Static local:LockedBrushConverter.Instance}}"/>
+													<Button Grid.Column="2" Content="Morph" HorizontalAlignment="Stretch"
+															Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.MorphSlotCommand}"
+															CommandParameter="{Binding}"
+															IsEnabled="{Binding HasItem}"/>
+													<Button Grid.Column="3" Content="Delete" HorizontalAlignment="Stretch"
+															Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.DeleteSlotCommand}"
+															CommandParameter="{Binding}"
+															IsEnabled="{Binding HasItem}"/>
+												</Grid>
+											</DataTemplate>
+										</ListBox.ItemTemplate>
+									</ListBox>
+
+									<!-- Create & Equip button -->
+									<Button Content="Create &amp; Equip"
+											Margin="2,2,2,6"
+											Command="{Binding CreateAndEquipCommand}"
+											CommandParameter="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem}"
+											IsEnabled="{Binding ElementName=ListBoxEquippedSlots, Path=SelectedItem.CanCreate, FallbackValue=False, TargetNullValue=False}"/>
+
+									<!-- Separator -->
+									<Separator Margin="4,2"/>
+
+									<!-- Tactics header row -->
+									<Grid Margin="2,4,2,1">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="150"/>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="*"/>
+										</Grid.ColumnDefinitions>
+										<Label Grid.Column="0" Content="Action" FontWeight="SemiBold" Foreground="Gray" Padding="4,1" FontSize="11"/>
+										<Label Grid.Column="1" Content="Condition 1" FontWeight="SemiBold" Foreground="Gray" Padding="4,1" FontSize="11"/>
+										<Label Grid.Column="2" Content="Condition 2" FontWeight="SemiBold" Foreground="Gray" Padding="4,1" FontSize="11"/>
+									</Grid>
+									<Separator Margin="4,0,4,2"/>
+
+									<!-- Tactic rows — one per non-empty entry (flat list) -->
+									<ItemsControl ItemsSource="{Binding TacticEntries}"
+												  HorizontalContentAlignment="Stretch">
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<Grid Margin="2,2">
+													<Grid.ColumnDefinitions>
+														<ColumnDefinition Width="150"/>
+														<ColumnDefinition Width="*"/>
+														<ColumnDefinition Width="*"/>
+													</Grid.ColumnDefinitions>
+
+													<!-- Col 0: [●] Skill name -->
+													<StackPanel Grid.Column="0"
+																Orientation="Horizontal"
+																VerticalAlignment="Center">
+														<Border Width="8" Height="8"
+																CornerRadius="4"
+																Margin="4,0,5,0"
+																VerticalAlignment="Center"
+																Background="{Binding BadgeColor}"/>
+														<TextBlock Text="{Binding Action}"
+																   FontFamily="Consolas"
+																   FontSize="11"
+																   VerticalAlignment="Center"
+																   TextTrimming="CharacterEllipsis"/>
+													</StackPanel>
+
+													<!-- Col 1: Condition 1 - clickable -->
+													<Button Grid.Column="1"
+															Content="{Binding Condition1}"
+															FontFamily="Consolas"
+															FontSize="11"
+															HorizontalContentAlignment="Left"
+															Padding="4,1"
+															Background="Transparent"
+															BorderThickness="0"
+															Foreground="Gray"
+															Cursor="Hand"
+															ToolTip="Click to change Condition 1"
+															Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.EditCondition1Command}"
+															CommandParameter="{Binding}"/>
+
+													<!-- Col 2: Condition 2 - clickable -->
+													<Button Grid.Column="2"
+															Content="{Binding Condition2}"
+															FontFamily="Consolas"
+															FontSize="11"
+															HorizontalContentAlignment="Left"
+															Padding="4,1"
+															Background="Transparent"
+															BorderThickness="0"
+															Foreground="Gray"
+															Cursor="Hand"
+															ToolTip="Click to change Condition 2"
+															Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}, Path=DataContext.EditCondition2Command}"
+															CommandParameter="{Binding}"/>
+												</Grid>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+
+								</StackPanel>
+							</ScrollViewer>
 						</TabItem>
 						<TabItem Header="Bond">
 							<DockPanel>

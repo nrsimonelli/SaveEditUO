@@ -54,6 +54,62 @@ namespace UnicornOverlord
 			return SaveData.Instance().ReadNumber(mAddress + 76 + (uint)(slot * 4), 4);
 		}
 
+		// Returns raw tactic field values for entry at entryIndex (0-15).
+		//
+		// Confirmed layout (16 bytes) from 010 Editor Save_CharData.bt template:
+		//   +0x00  u16  SkillID    — 0=Standard Attack; 1-9=class-relative slot; ≥10=absolute skill ID
+		//   +0x02  u8   Unk1
+		//   +0x03  u8   Unk2
+		//   +0x04  s16  isValid    — (-1)=active class skill; 0=active item skill; 2=passive item skill
+		//   +0x06  s16  Unk_0x6
+		//   +0x08  u32  isUnusable — 0=available; 4=item skill marker; other=locked/PP cost
+		//   +0x0C  u16  CondA      — primary condition index (base 4992 in UcFactorList)
+		//   +0x0E  u16  CondB      — secondary condition index; 0 = none
+		//
+		// Item skill entries (isUnusable == 4):
+		//   Active  (isValid == 0): player-set conditions stored at charAddr+92 [cond1 u16][cond2 u16]
+		//   Passive (isValid == 2): player-set conditions stored in entry[i-1].CondA / entry[i-1].CondB
+		public (uint skillId, int isValid, uint isUnusable, uint condA, uint condB) GetTacticRaw(int entryIndex)
+		{
+			uint base_ = mAddress + 96 + (uint)(entryIndex * 16);
+			uint skillId    = SaveData.Instance().ReadNumber(base_ + 0,  2);
+			int  isValid    = (short)SaveData.Instance().ReadNumber(base_ + 4, 2);
+			uint isUnusable = SaveData.Instance().ReadNumber(base_ + 8,  4);
+			uint condA      = SaveData.Instance().ReadNumber(base_ + 12, 2);
+			uint condB      = SaveData.Instance().ReadNumber(base_ + 14, 2);
+			return (skillId, isValid, isUnusable, condA, condB);
+		}
+
+		// Returns the player-set conditions for the FIRST tactic entry (entry[0]).
+		// Under the universal one-behind rule, entry[0]'s conditions are stored at
+		// charAddr+92 as a packed u32: low u16 = cond1, high u16 = cond2.
+		// All subsequent entries get their conditions from the previous entry's CondA/CondB,
+		// which GetTacticRaw already returns — no special accessor needed for those.
+		public (uint condA, uint condB) GetFirstTacticConditions()
+		{
+			uint packed = SaveData.Instance().ReadNumber(mAddress + 92, 4);
+			return (packed & 0xFFFF, (packed >> 16) & 0xFFFF);
+		}
+
+		// Writes player-set conditions for the tactic at display array index entryIndex.
+		// Mirrors the universal one-behind read rule:
+		//   entryIndex == 0 → write packed u32 to charAddr+92 [cond1 lo-u16, cond2 hi-u16]
+		//   entryIndex  > 0 → write cond1/cond2 to entry[entryIndex-1].CondA / CondB
+		public void SetTacticConditions(int entryIndex, uint condA, uint condB)
+		{
+			if (entryIndex == 0)
+			{
+				uint packed = (condA & 0xFFFF) | ((condB & 0xFFFF) << 16);
+				SaveData.Instance().WriteNumber(mAddress + 92, 4, packed);
+			}
+			else
+			{
+				uint prevBase = mAddress + 96 + (uint)((entryIndex - 1) * 16);
+				SaveData.Instance().WriteNumber(prevBase + 12, 2, condA);
+				SaveData.Instance().WriteNumber(prevBase + 14, 2, condB);
+			}
+		}
+
 		public string DisplayName
 		{
 			get

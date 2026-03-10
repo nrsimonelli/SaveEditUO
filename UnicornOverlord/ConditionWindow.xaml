@@ -1,0 +1,40 @@
+<Window x:Class="UnicornOverlord.ConditionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        mc:Ignorable="d"
+        Title="Choose Condition" Height="320" Width="280"
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
+        Loaded="Window_Loaded">
+	<DockPanel>
+		<!-- Filter bar -->
+		<DockPanel DockPanel.Dock="Top" Margin="4,4,4,2">
+			<Label Content="Filter" DockPanel.Dock="Left"/>
+			<TextBox x:Name="TextBoxFilter"
+					 TextChanged="TextBoxFilter_TextChanged"
+					 TabIndex="0"/>
+		</DockPanel>
+
+		<!-- OK / Cancel -->
+		<Grid DockPanel.Dock="Bottom" Margin="4,2,4,4">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+			<Button x:Name="ButtonOK"
+					Content="OK"
+					IsDefault="True"
+					IsEnabled="False"
+					Click="ButtonOK_Click"/>
+			<Button Grid.Column="1"
+					Content="Cancel"
+					IsCancel="True"/>
+		</Grid>
+
+		<!-- Condition list -->
+		<ListBox x:Name="ListBoxCondition"
+				 Margin="4,0"
+				 SelectionChanged="ListBoxCondition_SelectionChanged"/>
+	</DockPanel>
+</Window>

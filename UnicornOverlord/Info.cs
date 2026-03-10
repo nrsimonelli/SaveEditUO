@@ -14,6 +14,9 @@ namespace UnicornOverlord
 		public List<NameValueInfo> Class { get; private set; } = new List<NameValueInfo>();
 		public List<NameValueInfo> Name { get; private set; } = new List<NameValueInfo>();
 		public List<NameValueInfo> GenericName { get; private set; } = new List<NameValueInfo>();
+		public List<NameValueInfo> TacticCondition { get; private set; } = new List<NameValueInfo>();
+		public List<NameValueInfo> Skill { get; private set; } = new List<NameValueInfo>();
+		public List<NameValueInfo> Factor { get; private set; } = new List<NameValueInfo>();
 
 		private Info() { }
 
@@ -34,6 +37,9 @@ namespace UnicornOverlord
 			AppendList("info\\class.txt", Class);
 			AppendList("info\\name.txt", Name);
 			AppendList("info\\generic_name.txt", GenericName);
+			AppendList("info\\tactic_condition.txt", TacticCondition);
+			AppendList("info\\skill.txt", Skill);
+			AppendList("info\\factor.txt", Factor);
 		}
 
 		public NameValueInfo? Search<Type>(List<Type> list, uint id)
