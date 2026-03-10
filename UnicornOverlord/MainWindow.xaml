@@ -1,4 +1,4 @@
-﻿<Window x:Class="UnicornOverlord.MainWindow"
+<Window x:Class="UnicornOverlord.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -28,7 +28,7 @@
 			<MenuItem Header="File(_F)">
 				<MenuItem Header="Open(_O)" Command="{Binding OpenFileCommand}" InputGestureText="Ctrl+O"/>
 				<MenuItem Header="Save(_S)" Command="{Binding SaveFileCommand}" InputGestureText="Ctrl+S"/>
-				<MenuItem Header="SaveAs(_A)" Command="{Binding SaveFileCommand}" InputGestureText="Ctrl+Shift+S"/>
+				<MenuItem Header="SaveAs(_A)" Command="{Binding SaveAsFileCommand}" InputGestureText="Ctrl+Shift+S"/>
 			</MenuItem>
 		</Menu>
 		<ToolBar DockPanel.Dock="Top">
