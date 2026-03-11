@@ -278,6 +278,17 @@ namespace UnicornOverlord
 			}
 		}
 
+		// 1 = Male, 2 = Female (charAddr + 0x30)
+		public uint Gender
+		{
+			get => SaveData.Instance().ReadNumber(mAddress + 0x30, 1);
+			set
+			{
+				SaveData.Instance().WriteNumber(mAddress + 0x30, 1, value);
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Gender)));
+			}
+		}
+
 		public uint Lv
 		{
 			get => SaveData.Instance().ReadNumber(mAddress + 60, 2);

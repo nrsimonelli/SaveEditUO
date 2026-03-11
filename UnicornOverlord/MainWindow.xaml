@@ -28,7 +28,7 @@
 			<MenuItem Header="File(_F)">
 				<MenuItem Header="Open(_O)" Command="{Binding OpenFileCommand}" InputGestureText="Ctrl+O"/>
 				<MenuItem Header="Save(_S)" Command="{Binding SaveFileCommand}" InputGestureText="Ctrl+S"/>
-				<MenuItem Header="SaveAs(_A)" Command="{Binding SaveAsFileCommand}" InputGestureText="Ctrl+Shift+S"/>
+				<MenuItem Header="SaveAs(_A)" Command="{Binding SaveFileCommand}" InputGestureText="Ctrl+Shift+S"/>
 			</MenuItem>
 		</Menu>
 		<ToolBar DockPanel.Dock="Top">
@@ -118,6 +118,7 @@
 							<RowDefinition MinHeight="24" MaxHeight="36"/>
 							<RowDefinition MinHeight="24" MaxHeight="36"/>
 							<RowDefinition MinHeight="24" MaxHeight="36"/>
+							<RowDefinition MinHeight="24" MaxHeight="36"/>
 						</Grid.RowDefinitions>
 						<Label Content="Use"/>
 						<CheckBox Grid.Column="1" IsChecked="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.Use}" VerticalAlignment="Center"/>
@@ -160,26 +161,32 @@
 							<ComboBoxItem Content="Go-getter"/>
 							<ComboBoxItem Content="All-rounder"/>
 						</ComboBox>
-						<Label Grid.Row="6" Content="HPPlus"/>
-						<TextBox Grid.Row="6" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.HPPlus, UpdateSourceTrigger=PropertyChanged}"/>
-						<Label Grid.Row="7" Content="AttackPlus"/>
-						<TextBox Grid.Row="7" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.AttackPlus, UpdateSourceTrigger=PropertyChanged}"/>
-						<Label Grid.Row="8" Content="DefensePlus"/>
-						<TextBox Grid.Row="8" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.DefensePlus, UpdateSourceTrigger=PropertyChanged}"/>
-						<Label Grid.Row="9" Content="MagicAttackPlus"/>
-						<TextBox Grid.Row="9" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.MagicAttackPlus, UpdateSourceTrigger=PropertyChanged}"/>
-						<Label Grid.Row="10" Content="MagicDefensePlus"/>
-						<TextBox Grid.Row="10" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.MagicDefensePlus, UpdateSourceTrigger=PropertyChanged}"/>
-						<Label Grid.Row="11" Content="HitRatePlus"/>
-						<TextBox Grid.Row="11" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.HitRatePlus, UpdateSourceTrigger=PropertyChanged}"/>
-						<Label Grid.Row="12" Content="AVoidPlus"/>
-						<TextBox Grid.Row="12" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.AVoidPlus, UpdateSourceTrigger=PropertyChanged}"/>
-						<Label Grid.Row="13" Content="CriticalPlus"/>
-						<TextBox Grid.Row="13" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.CriticalPlus, UpdateSourceTrigger=PropertyChanged}"/>
-						<Label Grid.Row="14" Content="GuardPlus"/>
-						<TextBox Grid.Row="14" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.GuardPlus, UpdateSourceTrigger=PropertyChanged}"/>
-						<Label Grid.Row="15" Content="SpeedPlus"/>
-						<TextBox Grid.Row="15" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.SpeedPlus, UpdateSourceTrigger=PropertyChanged}"/>
+						<Label Grid.Row="6" Content="Gender"/>
+						<ComboBox Grid.Row="6" Grid.Column="1"
+								  SelectedIndex="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.Gender, UpdateSourceTrigger=PropertyChanged, Converter={x:Static local:GenderIndexConverter.Instance}}">
+							<ComboBoxItem Content="Male"/>
+							<ComboBoxItem Content="Female"/>
+						</ComboBox>
+						<Label Grid.Row="7" Content="HPPlus"/>
+						<TextBox Grid.Row="7" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.HPPlus, UpdateSourceTrigger=PropertyChanged}"/>
+						<Label Grid.Row="8" Content="AttackPlus"/>
+						<TextBox Grid.Row="8" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.AttackPlus, UpdateSourceTrigger=PropertyChanged}"/>
+						<Label Grid.Row="9" Content="DefensePlus"/>
+						<TextBox Grid.Row="9" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.DefensePlus, UpdateSourceTrigger=PropertyChanged}"/>
+						<Label Grid.Row="10" Content="MagicAttackPlus"/>
+						<TextBox Grid.Row="10" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.MagicAttackPlus, UpdateSourceTrigger=PropertyChanged}"/>
+						<Label Grid.Row="11" Content="MagicDefensePlus"/>
+						<TextBox Grid.Row="11" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.MagicDefensePlus, UpdateSourceTrigger=PropertyChanged}"/>
+						<Label Grid.Row="12" Content="HitRatePlus"/>
+						<TextBox Grid.Row="12" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.HitRatePlus, UpdateSourceTrigger=PropertyChanged}"/>
+						<Label Grid.Row="13" Content="AVoidPlus"/>
+						<TextBox Grid.Row="13" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.AVoidPlus, UpdateSourceTrigger=PropertyChanged}"/>
+						<Label Grid.Row="14" Content="CriticalPlus"/>
+						<TextBox Grid.Row="14" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.CriticalPlus, UpdateSourceTrigger=PropertyChanged}"/>
+						<Label Grid.Row="15" Content="GuardPlus"/>
+						<TextBox Grid.Row="15" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.GuardPlus, UpdateSourceTrigger=PropertyChanged}"/>
+						<Label Grid.Row="16" Content="SpeedPlus"/>
+						<TextBox Grid.Row="16" Grid.Column="1" Text="{Binding ElementName=ListBoxCharacter, Path=SelectedItem.SpeedPlus, UpdateSourceTrigger=PropertyChanged}"/>
 					</Grid>
 					</ScrollViewer>
 					<TabControl Grid.Column="2">

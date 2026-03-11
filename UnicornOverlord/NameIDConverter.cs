@@ -80,4 +80,16 @@ namespace UnicornOverlord
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			=> throw new NotImplementedException();
 	}
+
+	// Converts Gender save value (1=Male, 2=Female) to/from ComboBox index (0=Male, 1=Female)
+	internal class GenderIndexConverter : IValueConverter
+	{
+		public static readonly GenderIndexConverter Instance = new GenderIndexConverter();
+
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			=> value is uint v ? (int)(v - 1) : 0;
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			=> value is int i ? (uint)(i + 1) : (uint)1;
+	}
 }

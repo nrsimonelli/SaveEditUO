@@ -202,6 +202,18 @@ namespace UnicornOverlord
 			item.Status = 4;
 		}
 
+
+		private static readonly HashSet<uint> MaleOnlyClasses = new()
+		{
+			1, 2, 3, 4, 7, 8, 13, 14, 15, 16, 19, 20, 23, 24, 25, 26, 29, 30, 33, 34, 45, 47, 51, 52, 60, 61, 62, 65, 66, 67, 68, 69, 71, 72,
+		};
+
+		// Classes confirmed female-only from save data analysis.
+		private static readonly HashSet<uint> FemaleOnlyClasses = new()
+		{
+      21, 22, 27, 28, 31, 32, 35, 36, 37, 38, 39, 40, 41, 42, 46, 48, 49, 50, 53, 54, 55, 56, 57, 58, 59, 63, 64, 70, 73,
+		};
+
 		private void ChoiceClass(object? parameter)
 		{
 			Character? ch = parameter as Character;
@@ -212,6 +224,12 @@ namespace UnicornOverlord
 			dlg.ID = ch.Class;
 			dlg.ShowDialog();
 			ch.Class = dlg.ID;
+
+			// Auto-update gender if the new class is gender-locked
+			if (MaleOnlyClasses.Contains(dlg.ID))
+				ch.Gender = 1;
+			else if (FemaleOnlyClasses.Contains(dlg.ID))
+				ch.Gender = 2;
 		}
 
 		private void AppendItem(object? parameter)
@@ -889,14 +907,14 @@ namespace UnicornOverlord
 
 		private void DeleteTacticEntry(object? parameter)
 		{
-    if (parameter is not TacticEntry entry) return;
-    if (mSelectedCharacter == null) return;
+			if (parameter is not TacticEntry entry) return;
+			if (mSelectedCharacter == null) return;
 
-    mSelectedCharacter.DeleteTacticEntry(entry.ArrayIndex);
-    RefreshTacticEntries();
+			mSelectedCharacter.DeleteTacticEntry(entry.ArrayIndex);
+			RefreshTacticEntries();
 
-    // Notify button state
-    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddSkill)));
+			// Notify button state
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddSkill)));
 		}
 
 		private void MorphSlot(object? parameter)
