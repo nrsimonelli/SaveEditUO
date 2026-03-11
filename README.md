@@ -2,13 +2,12 @@
 
 ![DL Count](https://img.shields.io/github/downloads/nrsimonelli/SaveEditUO/total.svg)
 
-Nintendo Switch save data editor for **Unicorn Overlord**.  
+Save data editor for the Nintendo Switch version of **Unicorn Overlord**.  
 Fork of [turtle-insect/UnicornOverlord](https://github.com/turtle-insect/UnicornOverlord) with additional features.
 
 ## Links
 
 - **Game portal:** <https://unicorn-overlord.com/>
-- **Switch (JP eShop):** <https://store-jp.nintendo.com/list/software/70010000058315.html>
 
 ## Requirements
 
@@ -20,6 +19,14 @@ Fork of [turtle-insect/UnicornOverlord](https://github.com/turtle-insect/Unicorn
 
 - Windows 10 (64-bit) or later
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) (or .NET 9 SDK)
+
+## Getting Started
+
+1. Download the latest `SaveEditUO-vX.X.X.zip` from the [Releases](https://github.com/nrsimonelli/SaveEditUO/releases) page
+2. Extract the zip to a folder of your choice
+3. Run `UnicornOverlord.exe`
+
+> **Note:** If Windows shows a SmartScreen warning, click **More info → Run anyway**. This is expected for unsigned applications.
 
 ## Basic workflow
 
@@ -66,7 +73,7 @@ Displays up to 8 skill slots per character, matching the in-game tactics screen 
 
 ### Items
 
-- Edit consumable **Count**; use **…** to pick an item by name
+- Edit consumables **Count** and use **…** to pick an item by name
 - **Append** — Add new items
 - **Count Max** — Set all consumable counts to 99
 
@@ -74,15 +81,6 @@ Displays up to 8 skill slots per character, matching the in-game tactics screen 
 
 - Append and delete equipment entries
 - Deleting an item updates all character slot references automatically
-
-### Units
-
-- Edit **Valid** and **Count** for each unit
-
-### Other
-
-- **Language** — Toolbar toggle: **en** / **jp** / **cn** for item, class, and name display
-- **Automatic backup** — Every time you open a save, a timestamped copy is written to `backup/`
 
 ---
 
@@ -97,7 +95,7 @@ Displays up to 8 skill slots per character, matching the in-game tactics screen 
 
 - **Full tactics** — The complete 16-byte tactic entry layout was implemented, including the `isValid`, `isUnusable`, skill ID encoding, and the universal one-behind condition storage rule (conditions for entry _i_ are always stored in entry _i−1_, with entry 0 conditions at `charAddr+92`).
 - **Class skill resolution** — Class-relative slot IDs (3–10) are resolved to skill names using a complete `ClassSkillSlots` table covering all 73 classes including all promotions, variants, and Dark Marquess forms.
-- **Item skill ID offset** — Item skills store their ID as `actual_id − 15`; this is correctly applied on read and write.
+- **Item skill ID offset** — Item skills store their ID as `actual_id − 15`. This is correctly applied on read and write.
 - **Condition picker** — Searchable picker built from the full 201-entry `UcFactorList` condition table, pre-selecting the current value and supporting case-insensitive search.
 - **Skill add/delete** — Inserting and removing skill entries correctly shifts the tactic array and rewrites all condition associations to preserve the one-behind rule throughout.
 
