@@ -709,20 +709,19 @@ namespace UnicornOverlord
                         : (uint)Rng.Next(1, 3); // random 1 or 2 for mixed classes
             sd.WriteNumber(addr + 0x30, 1, gender);
 
-            // ── Colors (randomized) ───────────────────────────────────────────────
-            // ─── per-character RNG for appearance randomization ───────────────────────
-            byte RandColor() => (byte)Rng.Next(2, 12); // indices [2,11] = 10 universal colors
-            byte randVoice = (byte)Rng.Next(1, 19); // [1,18] inclusive
+            // ── Colors & voice (randomized) ──────────────────────────────────────
+            // Hired generics store appearance at +0x02C-0x032, NOT at +0x170-0x177.
+            // +0x170 is the processed/cached region used by named story chars only.
+            byte RandColor() => (byte)Rng.Next(1, 12); // indices [2,11] = 10 universal colors
+            byte RandHair()  => (byte)Rng.Next(1, 12);
+            byte randVoice = (byte)Rng.Next(1, 19);    // [1,18]: 6 types × 3 variants
 
-            sd.WriteNumber(addr + 0x16C, 1, 1); // constant – always 1
-            sd.WriteNumber(addr + 0x170, 1, RandColor()); // Base color     (index 2-11)
-            sd.WriteNumber(addr + 0x171, 1, RandColor()); // Hair color     (index 2-11)
-            sd.WriteNumber(addr + 0x172, 1, RandColor()); // Accent color 1 (index 2-11)
-            sd.WriteNumber(addr + 0x173, 1, RandColor()); // Accent color 2 (index 2-11)
-            sd.WriteNumber(addr + 0x174, 1, randVoice); // Voice type     (index 1-18)
-            sd.WriteNumber(addr + 0x175, 1, randVoice); // u175 – mirrors voice (game recomputes)
-            sd.WriteNumber(addr + 0x176, 1, randVoice); // u176 – mirrors voice (u175 == u176 always)
-            sd.WriteNumber(addr + 0x177, 1, randVoice); // u177 – mirrors voice (game recomputes)
+            sd.WriteNumber(addr + 0x2C, 1, RandColor()); // Base color     (index 2-11)
+            sd.WriteNumber(addr + 0x2D, 1, RandHair()); // Hair color     (index 2-11; 0 = inherit base)
+            sd.WriteNumber(addr + 0x2E, 1, RandColor()); // Accent color 1 (index 2-11)
+            sd.WriteNumber(addr + 0x2F, 1, RandColor()); // Accent color 2 (index 2-11)
+            // addr + 0x30 (gender) is already written above
+            sd.WriteNumber(addr + 0x32, 1, randVoice);   // Voice type (1-18)
             
             // ── Generic name index (random) ───────────────────────────────────
             int genderOffset = (gender == 2) ? 70 : 0;
