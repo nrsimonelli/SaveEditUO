@@ -48,12 +48,7 @@ namespace UnicornOverlord
         // Maximum number of characters the save supports.
         private const uint MaxCharacters   = 500;
 
-        // Valid range for random generic-name index (inclusive).
-        private const uint GenericNameMin  = 152;
-        private const uint GenericNameMax  = 624;
-
         // ── Gender-locked class sets (mirrors ViewModel.cs) ──────────────────
-
       	private static readonly HashSet<uint> MaleOnlyClasses = new()
 		{
 			1, 2, 3, 4, 7, 8, 13, 14, 15, 16, 19, 20, 23, 24, 25, 26, 29, 30, 33, 34, 45, 47, 51, 52, 60, 61, 62, 65, 66, 67, 68, 69, 71, 72,
@@ -86,6 +81,13 @@ namespace UnicornOverlord
             ["Paladin"] = 61, ["Prince"] = 62, ["Dreadnought"] = 63,
             ["Dark Marquess (Sword)"] = 69, ["Dark Marquess (Axe)"] = 70,
             ["Dark Marquess (Lance)"] = 72, ["Dark Marquess (Staff)"] = 73,
+        };
+
+        // Level (5-step) -> EXP; levels not in table use 0.
+        private static readonly Dictionary<int, uint> LevelToExp = new()
+        {
+            [5] = 1000, [10] = 4650, [15] = 12350, [20] = 28000, [25] = 56400,
+            [30] = 109200, [35] = 203500, [40] = 364000, [45] = 638900, [50] = 1057900,
         };
 
         private static readonly Dictionary<string, int> SkillKeyToId = new()
@@ -571,7 +573,7 @@ namespace UnicornOverlord
                 }
 
                 uint mappedSlot = slot < 3 ? (uint)slot + 3 : (uint)slot - 3;
-                WriteCharacter(charIdx, charDef, unitIdentifier, mappedSlot, warnings, newIds,
+                WriteCharacter(charIdx, charDef, unitIdentifier, mappedSlot, playerNum, warnings, newIds,
                     $"Player {playerNum} unit '{unitId}'");
                 WriteUnitSlot(unitIndex, (int)mappedSlot, charIdx);
             }
@@ -672,6 +674,7 @@ namespace UnicornOverlord
             JsonObject def,
             uint unitIdentifier,
             uint formationSlot,
+            int playerNum,
             List<string> warnings,
             List<uint> newIds,
             string ctx)
@@ -709,30 +712,38 @@ namespace UnicornOverlord
                         : (uint)Rng.Next(1, 3); // random 1 or 2 for mixed classes
             sd.WriteNumber(addr + 0x30, 1, gender);
 
-            // ── Colors & voice (randomized) ──────────────────────────────────────
-            // Hired generics store appearance at +0x02C-0x033, NOT at +0x170-0x177.
-            // +0x170 is the processed/cached region used by named story chars only.
-            byte RandColor() => (byte)Rng.Next(1, 12); // indices [1,11]
-            byte randVoice = (byte)Rng.Next(1, 19);    // [1,18]: 6 types × 3 variants
+            // ── Colors ────────────────────────────────────────────────────────────
+            // Base color is assigned per player (1-indexed, 0-based index):
+            //   Player 1 → index 1 (color 1)
+            //   Player 2 → index 2 (color 2)
+            //   Player 3 → index 3 (color 4)
+            //   Player 4 → index 4 (color 3)
+            // Color indices are 0-based (0 = Flaxen/first palette entry).
+            //
+            // Hair, Accent 1, and Accent 2 are written as 0 (inherit base / no override).
+            // A full per-class color range map is still needed to support meaningful
+            // randomization of hair/accent slots — that work is deferred.
+            uint baseColor = playerNum == 3 ? 4 : playerNum == 4 ? 3 : (uint)playerNum;
+            sd.WriteNumber(addr + 0x2C, 1, baseColor); // Base color (player-based)
+            sd.WriteNumber(addr + 0x2D, 1, 0);               // Hair color  (0 = inherit base)
+            sd.WriteNumber(addr + 0x2E, 1, 0);               // Accent color 1
+            sd.WriteNumber(addr + 0x2F, 1, 0);               // Accent color 2
+            // addr + 0x30 (gender) already written above
 
-            sd.WriteNumber(addr + 0x2C, 1, RandColor()); // Base color     (index 1-11)
-            sd.WriteNumber(addr + 0x2D, 1, RandColor()); // Hair color     (index 1-11; 1 = inherit base)
-            sd.WriteNumber(addr + 0x2E, 1, RandColor()); // Accent color 1 (index 1-11)
-            sd.WriteNumber(addr + 0x2F, 1, RandColor()); // Accent color 2 (index 1-11)
-            // addr + 0x30 (gender) is already written above
-            sd.WriteNumber(addr + 0x32, 1, randVoice);   // Voice personality (1-18)
+            // ── Voice ─────────────────────────────────────────────────────────────
+            // Personality index (1–18): 6 types × 3 variants.
+            byte randVoice = (byte)Rng.Next(1, 19);
+            sd.WriteNumber(addr + 0x32, 1, randVoice);
 
-            // +0x033: voice sample-set ID, derived from voice personality and gender.
-            // Formula (verified across all observed chars):
-            //   type     = (randVoice - 1) / 3          // 0=Hot-blooded ... 5=Noble
-            //   variant  = (randVoice - 1) % 3          // 0,1,2 within type
+            // Sample-set ID at +0x33 encodes personality + gender.
+            // Formula verified against all observed chars:
+            //   type = (voice-1)/3, variant = (voice-1)%3
             //   maleSampleBase = 94 + type*6 + (variant < 2 ? variant : 5)
-            //   sampleId = maleSampleBase + (gender == 2 ? 3 : 0)
-            int voiceType    = (randVoice - 1) / 3;
-            int voiceVariant = (randVoice - 1) % 3;
+            //   sampleId = maleSampleBase + (female ? 3 : 0)
+            int voiceType      = (randVoice - 1) / 3;
+            int voiceVariant   = (randVoice - 1) % 3;
             int maleSampleBase = 94 + voiceType * 6 + (voiceVariant < 2 ? voiceVariant : 5);
-            uint voiceSampleId = (uint)(maleSampleBase + (gender == 2 ? 3 : 0));
-            sd.WriteNumber(addr + 0x33, 1, voiceSampleId);
+            sd.WriteNumber(addr + 0x33, 1, (uint)(maleSampleBase + (gender == 2 ? 3 : 0)));
             
             // ── Generic name index (random) ───────────────────────────────────
             int genderOffset = (gender == 2) ? 70 : 0;
@@ -746,14 +757,33 @@ namespace UnicornOverlord
                 level = (uint)Math.Max(1, def["level"]!.GetValue<int>());
             sd.WriteNumber(addr + 60, 2, level);
 
-            // ── HP ───────────────────────────────────────────────────────────
+            // ── HP ────────────────────────────────────────────────────────────────
+            // +0x3E (addr+62): max HP read by the game for deployment eligibility.
             uint hp = 1;
             if (def["maxHP"] != null)
                 hp = (uint)def["maxHP"]!.GetValue<int>();
             sd.WriteNumber(addr + 62, 2, hp);
 
-            // ── Exp (set to 0 for imported characters) ────────────────────────
-            sd.WriteNumber(addr + 56, 4, 0);
+           uint stamina = classId switch
+            {
+                39 or 41 or 48 => 4,
+                22 or 25 or 27 or 28 or 33 or 35 or 36 or 43 => 5,
+                _ => 6,
+            };
+            uint unk1C0 = classId switch
+            {
+                6 or 45 or 46 or 47 or 48 => 1,
+                43 => 4,
+                11 or 22 or 39 or 53 or 58 => 3,
+                _ => 2,
+            };
+            sd.WriteNumber(addr + 0x1C0, 4, unk1C0);   // unknown – must not be 0xFFFFFFFF
+            sd.WriteNumber(addr + 0x1C8, 2, stamina);   // Stamina current
+            sd.WriteNumber(addr + 0x1CA, 2, stamina);   // Stamina max
+
+            // ── Exp (from level table; 5-step increments, 0 if not in table) ──
+            uint exp = LevelToExp.TryGetValue((int)level, out var expVal) ? expVal : 0;
+            sd.WriteNumber(addr + 56, 4, exp);
 
             // ── Growth types ──────────────────────────────────────────────────
             var growthsNode = def["growths"] as JsonArray;
