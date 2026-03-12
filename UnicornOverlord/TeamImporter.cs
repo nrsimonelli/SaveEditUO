@@ -710,18 +710,29 @@ namespace UnicornOverlord
             sd.WriteNumber(addr + 0x30, 1, gender);
 
             // ── Colors & voice (randomized) ──────────────────────────────────────
-            // Hired generics store appearance at +0x02C-0x032, NOT at +0x170-0x177.
+            // Hired generics store appearance at +0x02C-0x033, NOT at +0x170-0x177.
             // +0x170 is the processed/cached region used by named story chars only.
-            byte RandColor() => (byte)Rng.Next(1, 12); // indices [2,11] = 10 universal colors
-            byte RandHair()  => (byte)Rng.Next(1, 12);
+            byte RandColor() => (byte)Rng.Next(1, 12); // indices [1,11]
             byte randVoice = (byte)Rng.Next(1, 19);    // [1,18]: 6 types × 3 variants
 
-            sd.WriteNumber(addr + 0x2C, 1, RandColor()); // Base color     (index 2-11)
-            sd.WriteNumber(addr + 0x2D, 1, RandHair()); // Hair color     (index 2-11; 0 = inherit base)
-            sd.WriteNumber(addr + 0x2E, 1, RandColor()); // Accent color 1 (index 2-11)
-            sd.WriteNumber(addr + 0x2F, 1, RandColor()); // Accent color 2 (index 2-11)
+            sd.WriteNumber(addr + 0x2C, 1, RandColor()); // Base color     (index 1-11)
+            sd.WriteNumber(addr + 0x2D, 1, RandColor()); // Hair color     (index 1-11; 1 = inherit base)
+            sd.WriteNumber(addr + 0x2E, 1, RandColor()); // Accent color 1 (index 1-11)
+            sd.WriteNumber(addr + 0x2F, 1, RandColor()); // Accent color 2 (index 1-11)
             // addr + 0x30 (gender) is already written above
-            sd.WriteNumber(addr + 0x32, 1, randVoice);   // Voice type (1-18)
+            sd.WriteNumber(addr + 0x32, 1, randVoice);   // Voice personality (1-18)
+
+            // +0x033: voice sample-set ID, derived from voice personality and gender.
+            // Formula (verified across all observed chars):
+            //   type     = (randVoice - 1) / 3          // 0=Hot-blooded ... 5=Noble
+            //   variant  = (randVoice - 1) % 3          // 0,1,2 within type
+            //   maleSampleBase = 94 + type*6 + (variant < 2 ? variant : 5)
+            //   sampleId = maleSampleBase + (gender == 2 ? 3 : 0)
+            int voiceType    = (randVoice - 1) / 3;
+            int voiceVariant = (randVoice - 1) % 3;
+            int maleSampleBase = 94 + voiceType * 6 + (voiceVariant < 2 ? voiceVariant : 5);
+            uint voiceSampleId = (uint)(maleSampleBase + (gender == 2 ? 3 : 0));
+            sd.WriteNumber(addr + 0x33, 1, voiceSampleId);
             
             // ── Generic name index (random) ───────────────────────────────────
             int genderOffset = (gender == 2) ? 70 : 0;
@@ -737,8 +748,8 @@ namespace UnicornOverlord
 
             // ── HP ───────────────────────────────────────────────────────────
             uint hp = 1;
-            if (def["maxHp"] != null)
-                hp = (uint)def["maxHp"]!.GetValue<int>();
+            if (def["maxHP"] != null)
+                hp = (uint)def["maxHP"]!.GetValue<int>();
             sd.WriteNumber(addr + 62, 2, hp);
 
             // ── Exp (set to 0 for imported characters) ────────────────────────
