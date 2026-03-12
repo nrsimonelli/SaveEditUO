@@ -22,6 +22,7 @@ namespace UnicornOverlord
 		public ICommand OpenFileCommand { get; set; }
 		public ICommand SaveFileCommand { get; set; }
 		public ICommand SaveAsFileCommand { get; set; }
+		public ICommand ImportTeamsCommand { get; set; }
 		public ICommand ChoiceItemCommand { get; set; }
 		public ICommand ChoiceEquipmentCommand { get; set; }
 		public ICommand ChoiceClassCommand { get; set; }
@@ -68,6 +69,7 @@ namespace UnicornOverlord
 			OpenFileCommand = new ActionCommand(OpenFile);
 			SaveFileCommand = new ActionCommand(SaveFile);
 			SaveAsFileCommand = new ActionCommand(SaveAsFile);
+			ImportTeamsCommand = new ActionCommand(ImportTeams);
 			ChoiceItemCommand = new ActionCommand(ChoiceItem);
 			ChoiceEquipmentCommand = new ActionCommand(ChoiceEquipment);
 			ChoiceClassCommand = new ActionCommand(ChoiceClass);
@@ -176,6 +178,46 @@ namespace UnicornOverlord
 			SaveData.Instance().SaveAs(dlg.FileName);
 		}
 
+		private void ImportTeams(object? parameter)
+		{
+			// Require a save to be open first.
+			if (Characters.Count == 0)
+			{
+					MessageBox.Show("Please open a save file before importing teams.",
+							"No Save Open", MessageBoxButton.OK, MessageBoxImage.Warning);
+					return;
+			}
+
+			var dlg = new OpenFileDialog();
+			dlg.Title  = "Select Team JSON";
+			dlg.Filter = "JSON files|*.json|All files|*.*";
+			if (dlg.ShowDialog() == false) return;
+
+			try
+			{
+					var (warnings, newIds) = TeamImporter.Import(dlg.FileName);
+					foreach (uint id in newIds)
+							InsertFriendship(id);
+					Initialize();
+
+					string msg = warnings.Count == 0
+							? "Teams imported successfully."
+							: $"Teams imported with {warnings.Count} warning(s):\n\n" +
+								string.Join("\n", warnings.Select(w => "• " + w));
+
+					MessageBoxImage icon = warnings.Count == 0
+							? MessageBoxImage.Information
+							: MessageBoxImage.Warning;
+
+					MessageBox.Show(msg, "Import Teams", MessageBoxButton.OK, icon);
+			}
+			catch (Exception ex)
+			{
+					MessageBox.Show($"Import failed:\n\n{ex.Message}",
+							"Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
+			}
+		}
+
 		private void ChoiceItem(object? parameter)
 		{
 			Item? item = parameter as Item;
@@ -208,7 +250,6 @@ namespace UnicornOverlord
 			1, 2, 3, 4, 7, 8, 13, 14, 15, 16, 19, 20, 23, 24, 25, 26, 29, 30, 33, 34, 45, 47, 51, 52, 60, 61, 62, 65, 66, 67, 68, 69, 71, 72,
 		};
 
-		// Classes confirmed female-only from save data analysis.
 		private static readonly HashSet<uint> FemaleOnlyClasses = new()
 		{
       21, 22, 27, 28, 31, 32, 35, 36, 37, 38, 39, 40, 41, 42, 46, 48, 49, 50, 53, 54, 55, 56, 57, 58, 59, 63, 64, 70, 73,

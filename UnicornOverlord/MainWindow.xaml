@@ -28,7 +28,9 @@
 			<MenuItem Header="File(_F)">
 				<MenuItem Header="Open(_O)" Command="{Binding OpenFileCommand}" InputGestureText="Ctrl+O"/>
 				<MenuItem Header="Save(_S)" Command="{Binding SaveFileCommand}" InputGestureText="Ctrl+S"/>
-				<MenuItem Header="SaveAs(_A)" Command="{Binding SaveFileCommand}" InputGestureText="Ctrl+Shift+S"/>
+				<MenuItem Header="SaveAs(_A)" Command="{Binding SaveAsFileCommand}" InputGestureText="Ctrl+Shift+S"/>
+				<Separator/>
+				<MenuItem Header="Import Teams (JSON)..." Command="{Binding ImportTeamsCommand}"/>
 			</MenuItem>
 		</Menu>
 		<ToolBar DockPanel.Dock="Top">
