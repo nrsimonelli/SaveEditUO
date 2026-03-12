@@ -510,6 +510,8 @@ namespace UnicornOverlord
             var playerRosters = root["playerRosters"] as JsonObject
                 ?? throw new Exception("Missing 'playerRosters' in JSON");
 
+            DeleteCharactersInUnits1To4(warnings);
+
             // Process players 1–4 → game units 01–04
             for (int player = 1; player <= 4; player++)
             {
@@ -547,9 +549,7 @@ namespace UnicornOverlord
             int unitIndex = playerNum - 1;  // 0-based index into UnitIdentifiers
             uint unitIdentifier = UnitIdentifiers[unitIndex];
 
-            // Step 1: Clear existing assignments for this unit.
-            ClearUnit(unitIndex, unitIdentifier, warnings);
-
+            // Step 1: DeleteCharactersInUnits1To4 already ran at import start.
             // Step 2: For each formation slot, create the character and assign it.
             for (int slot = 0; slot < 6 && slot < formationNode.Count; slot++)
             {
@@ -580,6 +580,80 @@ namespace UnicornOverlord
         }
 
         // ── Unit block helpers ────────────────────────────────────────────────
+
+        private const uint InventoryBase   = 0xA0;
+        private const uint InventoryStride = 20;
+        private const uint InventorySlots  = 3800;
+
+        /// <summary>
+        /// Frees inventory entries for the given character by zeroing each equipped
+        /// item slot (first 4 bytes = 0 marks the slot as free). Equipment indices
+        /// are read from char+76, 80, 84, 88 (1-based). Inventory at +12 stores
+        /// char slot index as 1 byte; slot indices &gt; 255 are ambiguous.
+        /// </summary>
+        private static void FreeCharacterEquipment(SaveData sd, uint charSlotIndex)
+        {
+            uint charAddr = Util.calcCharacterAddress(charSlotIndex);
+            for (int s = 0; s < 4; s++)
+            {
+                uint invIdx = sd.ReadNumber(charAddr + 76 + (uint)(s * 4), 4);
+                if (invIdx == 0 || invIdx > InventorySlots) continue;
+                uint itemAddr = InventoryBase + (invIdx - 1) * InventoryStride;
+                sd.WriteNumber(itemAddr, 4, 0);
+            }
+        }
+
+        /// <summary>
+        /// Deletes one character: frees their equipped inventory entries, then zeros
+        /// the full 464-byte block and sets id to 0xFFFFFFFF so the slot is empty.
+        /// </summary>
+        private static void DeleteCharacter(SaveData sd, uint charSlotIndex)
+        {
+            FreeCharacterEquipment(sd, charSlotIndex);
+            uint charAddr = Util.calcCharacterAddress(charSlotIndex);
+            sd.WriteValue(charAddr, new byte[CharBlockSize]);
+            sd.WriteNumber(charAddr, 4, 0xFFFFFFFF);
+        }
+
+        /// <summary>
+        /// Deletes all characters assigned to units 1-4 (identifiers 2, 11, 16, 29),
+        /// frees their equipment in inventory, clears the four unit formation slots,
+        /// and recomputes AddrCharCount.
+        /// </summary>
+        private static void DeleteCharactersInUnits1To4(List<string> warnings)
+        {
+            var sd = SaveData.Instance();
+            for (uint ci = 0; ci < MaxCharacters; ci++)
+            {
+                uint charAddr = Util.calcCharacterAddress(ci);
+                uint id = sd.ReadNumber(charAddr, 4);
+                if (id == 0xFFFFFFFF) break;
+
+                uint assignedUnit = sd.ReadNumber(charAddr + 4, 4);
+                if (assignedUnit == 2 || assignedUnit == 11 || assignedUnit == 16 || assignedUnit == 29)
+                    DeleteCharacter(sd, ci);
+            }
+
+            for (int s = 0; s < 6; s++)
+                sd.WriteNumber(Unit01Base + 4 + (uint)(s * 4), 4, 0xFFFFFFFF);
+            for (int unitIndex = 1; unitIndex <= 3; unitIndex++)
+            {
+                uint blockBase = UnitBlockBase + (uint)(unitIndex - 1) * UnitBlockStride;
+                for (int s = 0; s < 6; s++)
+                    sd.WriteNumber(blockBase + UnitSlotOffset + (uint)(s * 4), 4, 0xFFFFFFFF);
+            }
+
+            uint maxSlotIndex = 0;
+            bool anyUsed = false;
+            for (uint ci = 0; ci < MaxCharacters; ci++)
+            {
+                uint id = sd.ReadNumber(Util.calcCharacterAddress(ci), 4);
+                if (id == 0xFFFFFFFF) continue;
+                anyUsed = true;
+                maxSlotIndex = ci;
+            }
+            sd.WriteNumber(AddrCharCount, 4, anyUsed ? maxSlotIndex + 1 : 0);
+        }
 
         /// <summary>
         /// Clears formation slots and unlinks any characters currently assigned
