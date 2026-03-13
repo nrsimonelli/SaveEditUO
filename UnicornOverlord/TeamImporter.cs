@@ -40,21 +40,35 @@ namespace UnicornOverlord
         // Unit 01: byte 0 = leader slot index (0–5). Units 2–4: byte +0x26 = leader slot, +0x27 = 0x01.
         private const uint UnitBlockLeaderSlotOffset = 0x26;
         private const uint UnitBlockLeaderFlagOffset = 0x27;
-        // Character heraldry (per-character): 2 bytes at +0x160 in the 464-byte character block.
-        // Preset bytes from diffs: 1,2 (Earl); 10,14,17,20 from Char76–Char79 in file01 vs file03.
+        // Character heraldry (per-character): 24 bytes at +0x160..+0x177 in the 464-byte character block.
+        // Full blobs from diff (UCSAVEFILE01 vs UCSAVEFILE03): preset 1=14, 2=20, 3=10, 4=17.
         private const uint CharHeraldryOffset = 0x160;
+        private const int CharHeraldryBlobLen = 0x18;
         private static readonly Dictionary<int, (byte B0, byte B1)> HeraldryPresetBytes = new()
         {
             [1] = (0x2C, 0x50), [2] = (0xFF, 0x9F),
             [10] = (0xD7, 0xC8), [14] = (0x01, 0x6C), [17] = (0x5F, 0x93), [20] = (0xCC, 0x33),
         };
         private static readonly (byte B0, byte B1) HeraldryFallback = (0x2C, 0x50);
+        // Full 24-byte heraldry blobs (preset 1..4 = game presets 14, 20, 10, 17). When set, write entire blob instead of 2 bytes.
+        private static readonly Dictionary<int, byte[]> HeraldryBlobs = new()
+        {
+            [14] = new byte[] { 0x01, 0x6C, 0xBC, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x6C, 0xBC, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x13, 0x13, 0x13, 0x15, 0x13, 0x2D, 0x2D, 0x13 }, // preset 1
+            [20] = new byte[] { 0xCC, 0x33, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x41, 0x05, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x21, 0x14, 0x23, 0x1F, 0x1D, 0x2E, 0x2E, 0x1E }, // preset 2
+            [10] = new byte[] { 0xD7, 0xC8, 0x44, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xD7, 0xC8, 0x44, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x0D, 0x0D, 0x0D, 0x0D, 0x0C, 0x0D, 0x0D, 0x0D }, // preset 3
+            [17] = new byte[] { 0x5F, 0x93, 0x19, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x8A, 0xD6, 0x24, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x15, 0x03, 0x03, 0x13, 0x12, 0x13, 0x13, 0x15 }, // preset 4
+        };
         // Default heraldry preset number per player (1–4). Overridable via JSON "heraldryPreset" on root or per-team.
         private static readonly int[] DefaultHeraldryPresetByPlayer = { 14, 20, 10, 17 }; // index 0 = player 1, etc.
 
         // Pre-set unit identifier values (fixed in every save).
         // These are written into char+0x04 to assign a character to a unit.
-        private static readonly uint[] UnitIdentifiers = { 2, 11, 16, 29 };
+        private static readonly uint[] UnitIdentifiers = { 1, 11, 16, 29 };
+
+        // Voice: +0x32 = voice index (0–17), +0x33 = sample-set ID. From save diffs; order: Hot-blooded 1–3, Sincere 1–3, Roughshod 1–3, Composed 1–3, Apathetic 1–3, Noble 1–3.
+        private const int VoiceOptionCount = 18;
+        private static readonly byte[] MaleVoiceSampleIds = { 0x5D, 0x5E, 0x5F, 0x63, 0x64, 0x65, 0x69, 0x6A, 0x6B, 0x6F, 0x70, 0x71, 0x75, 0x76, 0x77, 0x7B, 0x7C, 0x7D };
+        private static readonly byte[] FemaleVoiceSampleIds = { 0x60, 0x61, 0x62, 0x66, 0x67, 0x68, 0x6C, 0x6D, 0x6E, 0x72, 0x73, 0x74, 0x78, 0x79, 0x7A, 0x7E, 0x7F, 0x80 };
 
         // Character block size in bytes.
         private const uint CharBlockSize   = 464;
@@ -717,7 +731,7 @@ namespace UnicornOverlord
         }
 
         /// <summary>
-        /// Deletes all characters assigned to units 1-4 (identifiers 2, 11, 16, 29),
+        /// Deletes all characters assigned to units 1-4 (identifiers 1, 11, 16, 29),
         /// frees their equipment in inventory, clears the four unit formation slots,
         /// and recomputes AddrCharCount.
         /// </summary>
@@ -731,7 +745,7 @@ namespace UnicornOverlord
                 if (id == 0xFFFFFFFF) break;
 
                 uint assignedUnit = sd.ReadNumber(charAddr + 4, 4);
-                if (assignedUnit == 2 || assignedUnit == 11 || assignedUnit == 16 || assignedUnit == 29)
+                if (Array.IndexOf(UnitIdentifiers, assignedUnit) >= 0)
                     DeleteCharacter(sd, ci);
             }
 
@@ -907,24 +921,24 @@ namespace UnicornOverlord
             // addr + 0x30 (gender) already written above
 
             // ── Voice ─────────────────────────────────────────────────────────────
-            // Personality index (1–18): 6 types × 3 variants.
-            byte randVoice = (byte)Rng.Next(1, 19);
-            sd.WriteNumber(addr + 0x32, 1, randVoice);
-
-            // Sample-set ID at +0x33 encodes personality + gender.
-            // Formula verified against all observed chars:
-            //   type = (voice-1)/3, variant = (voice-1)%3
-            //   maleSampleBase = 94 + type*6 + (variant < 2 ? variant : 5)
-            //   sampleId = maleSampleBase + (female ? 3 : 0)
-            int voiceType      = (randVoice - 1) / 3;
-            int voiceVariant   = (randVoice - 1) % 3;
-            int maleSampleBase = 94 + voiceType * 6 + (voiceVariant < 2 ? voiceVariant : 5);
-            sd.WriteNumber(addr + 0x33, 1, (uint)(maleSampleBase + (gender == 2 ? 3 : 0)));
+            // +0x32 = voice index (0–17), +0x33 = sample ID. Use game's exact bytes from save diffs so combat lines play.
+            int voiceIndex = Rng.Next(0, VoiceOptionCount);
+            byte[] sampleIds = (gender == 2) ? FemaleVoiceSampleIds : MaleVoiceSampleIds;
+            sd.WriteNumber(addr + 0x32, 1, (uint)voiceIndex);
+            sd.WriteNumber(addr + 0x33, 1, sampleIds[voiceIndex]);
 
             // ── Heraldry (per-character) ───────────────────────────────────────
-            var (b0, b1) = HeraldryPresetBytes.TryGetValue(heraldryPreset, out var bytes) ? bytes : HeraldryFallback;
-            sd.WriteNumber(addr + CharHeraldryOffset,     1, b0);
-            sd.WriteNumber(addr + CharHeraldryOffset + 1, 1, b1);
+            if (HeraldryBlobs.TryGetValue(heraldryPreset, out byte[]? blob) && blob.Length == CharHeraldryBlobLen)
+            {
+                for (int i = 0; i < CharHeraldryBlobLen; i++)
+                    sd.WriteNumber(addr + CharHeraldryOffset + (uint)i, 1, blob[i]);
+            }
+            else
+            {
+                var (b0, b1) = HeraldryPresetBytes.TryGetValue(heraldryPreset, out var bytes) ? bytes : HeraldryFallback;
+                sd.WriteNumber(addr + CharHeraldryOffset,     1, b0);
+                sd.WriteNumber(addr + CharHeraldryOffset + 1, 1, b1);
+            }
 
             // ── Generic name index (random) ───────────────────────────────────
             int genderOffset = (gender == 2) ? 70 : 0;
