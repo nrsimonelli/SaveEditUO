@@ -37,6 +37,20 @@ namespace UnicornOverlord
         private const uint UnitSlotOffset  = 0x692;
         // Within a unit block: offset to the unit identifier field (u32).
         private const uint UnitIdOffset    = 0x68E;
+        // Unit 01: byte 0 = leader slot index (0–5). Units 2–4: byte +0x26 = leader slot, +0x27 = 0x01.
+        private const uint UnitBlockLeaderSlotOffset = 0x26;
+        private const uint UnitBlockLeaderFlagOffset = 0x27;
+        // Character heraldry (per-character): 2 bytes at +0x160 in the 464-byte character block.
+        // Preset bytes from diffs: 1,2 (Earl); 10,14,17,20 from Char76–Char79 in file01 vs file03.
+        private const uint CharHeraldryOffset = 0x160;
+        private static readonly Dictionary<int, (byte B0, byte B1)> HeraldryPresetBytes = new()
+        {
+            [1] = (0x2C, 0x50), [2] = (0xFF, 0x9F),
+            [10] = (0xD7, 0xC8), [14] = (0x01, 0x6C), [17] = (0x5F, 0x93), [20] = (0xCC, 0x33),
+        };
+        private static readonly (byte B0, byte B1) HeraldryFallback = (0x2C, 0x50);
+        // Default heraldry preset number per player (1–4). Overridable via JSON "heraldryPreset" on root or per-team.
+        private static readonly int[] DefaultHeraldryPresetByPlayer = { 14, 20, 10, 17 }; // index 0 = player 1, etc.
 
         // Pre-set unit identifier values (fixed in every save).
         // These are written into char+0x04 to assign a character to a unit.
@@ -524,6 +538,8 @@ namespace UnicornOverlord
                     continue;
                 }
 
+                int heraldryPreset = ResolveHeraldryPreset(player, teamNode, root, warnings);
+
                 var formationNode = teamNode["formation"] as JsonArray;
                 if (formationNode == null)
                 {
@@ -531,23 +547,39 @@ namespace UnicornOverlord
                     continue;
                 }
 
-                ImportUnit(player, formationNode, rosterNode, warnings, newIds);
+                ImportUnit(player, teamNode, formationNode, rosterNode, heraldryPreset, warnings, newIds);
             }
 
             return (warnings, newIds);
+        }
+
+        /// <summary>Resolves heraldry preset for a player: team "heraldryPreset" → root "heraldryPreset" → default (14,20,10,17).</summary>
+        private static int ResolveHeraldryPreset(int playerNum, JsonObject teamNode, JsonNode root, List<string> warnings)
+        {
+            var teamHp = teamNode["heraldryPreset"];
+            if (teamHp != null && teamHp.GetValueKind() == JsonValueKind.Number && teamHp.GetValue<int>() is int t && t >= 1)
+                return t;
+            var rootHp = root["heraldryPreset"];
+            if (rootHp != null && rootHp.GetValueKind() == JsonValueKind.Number && rootHp.GetValue<int>() is int r && r >= 1)
+                return r;
+            return DefaultHeraldryPresetByPlayer[playerNum - 1];
         }
 
         // ── Per-unit import ───────────────────────────────────────────────────
 
         private static void ImportUnit(
             int playerNum,
+            JsonObject teamNode,
             JsonArray formationNode,
             JsonObject rosterNode,
+            int heraldryPreset,
             List<string> warnings,
             List<uint> newIds)
         {
             int unitIndex = playerNum - 1;  // 0-based index into UnitIdentifiers
             uint unitIdentifier = UnitIdentifiers[unitIndex];
+            var filledSlots = new List<int>();  // formation slot indices (0–5) we wrote
+            var slotToCharIdx = new List<(int slot, uint charIdx)>();  // for per-char leader flag at +0x1CC
 
             // Step 1: DeleteCharactersInUnits1To4 already ran at import start.
             // Step 2: For each formation slot, create the character and assign it.
@@ -572,11 +604,80 @@ namespace UnicornOverlord
                     break;
                 }
 
-                uint mappedSlot = slot < 3 ? (uint)slot + 3 : (uint)slot - 3;
-                WriteCharacter(charIdx, charDef, unitIdentifier, mappedSlot, playerNum, warnings, newIds,
+                uint mappedSlot = slot < 3 ? (uint)slot + 3 : (uint)slot - 3;  // JSON 0–2=front→game 3–5, JSON 3–5=back→game 0–2
+                WriteCharacter(charIdx, charDef, unitIdentifier, mappedSlot, playerNum, heraldryPreset, warnings, newIds,
                     $"Player {playerNum} unit '{unitId}'");
                 WriteUnitSlot(unitIndex, (int)mappedSlot, charIdx);
+                filledSlots.Add((int)mappedSlot);
+                slotToCharIdx.Add(((int)mappedSlot, charIdx));
             }
+
+            if (filledSlots.Count == 0)
+                return;
+
+            int leaderSlot = ResolveLeaderSlot(teamNode, formationNode, filledSlots, playerNum, warnings);
+            var sd = SaveData.Instance();
+            // Game expects 0-based leader slot index (0–5).
+            uint leaderValue = (uint)leaderSlot;
+
+            if (unitIndex == 0)
+            {
+                sd.WriteNumber(Unit01Base + 0, 4, leaderValue);
+            }
+            else
+            {
+                uint blockBase = UnitBlockBase + (uint)(unitIndex - 1) * UnitBlockStride;
+                sd.WriteNumber(blockBase + UnitBlockLeaderSlotOffset, 1, leaderValue);
+                sd.WriteNumber(blockBase + UnitBlockLeaderFlagOffset, 1, 1);
+            }
+
+            // Per-character leader flag at char+0x1CC: 0x19 = leader, 0x18 = non-leader.
+            foreach (var (slot, cIdx) in slotToCharIdx)
+            {
+                uint charAddr = Util.calcCharacterAddress(cIdx);
+                sd.WriteNumber(charAddr + 0x1CC, 1, (uint)(slot == leaderSlot ? 0x19 : 0x18));
+            }
+        }
+
+        /// <summary>
+        /// Resolves leader slot (0–5) from optional JSON "leaderSlot" or "leader" (unitId), else first filled slot.
+        /// </summary>
+        private static int ResolveLeaderSlot(
+            JsonObject teamNode,
+            JsonArray formationNode,
+            List<int> filledSlots,
+            int playerNum,
+            List<string> warnings)
+        {
+            var leaderSlotNode = teamNode["leaderSlot"];
+            if (leaderSlotNode != null)
+            {
+                if (leaderSlotNode.GetValueKind() == JsonValueKind.Number &&
+                    leaderSlotNode.GetValue<int>() is int s && s >= 0 && s <= 5)
+                    return s;
+                warnings.Add($"Player {playerNum}: invalid 'leaderSlot', using first filled slot.");
+            }
+
+            var leaderIdNode = teamNode["leader"];
+            if (leaderIdNode != null)
+            {
+                string leaderId = leaderIdNode.ToString();
+                for (int i = 0; i < formationNode.Count && i < 6; i++)
+                {
+                    var n = formationNode[i];
+                    if (n == null || n.GetValueKind() == JsonValueKind.Null) continue;
+                    if (string.Equals(n.ToString(), leaderId, StringComparison.Ordinal))
+                    {
+                        int gameSlot = i < 3 ? i + 3 : i - 3;
+                        if (filledSlots.Contains(gameSlot))
+                            return gameSlot;
+                        break;
+                    }
+                }
+                warnings.Add($"Player {playerNum}: 'leader' unit '{leaderId}' not in formation or empty, using first filled slot.");
+            }
+
+            return filledSlots[0];
         }
 
         // ── Unit block helpers ────────────────────────────────────────────────
@@ -749,6 +850,7 @@ namespace UnicornOverlord
             uint unitIdentifier,
             uint formationSlot,
             int playerNum,
+            int heraldryPreset,
             List<string> warnings,
             List<uint> newIds,
             string ctx)
@@ -818,7 +920,12 @@ namespace UnicornOverlord
             int voiceVariant   = (randVoice - 1) % 3;
             int maleSampleBase = 94 + voiceType * 6 + (voiceVariant < 2 ? voiceVariant : 5);
             sd.WriteNumber(addr + 0x33, 1, (uint)(maleSampleBase + (gender == 2 ? 3 : 0)));
-            
+
+            // ── Heraldry (per-character) ───────────────────────────────────────
+            var (b0, b1) = HeraldryPresetBytes.TryGetValue(heraldryPreset, out var bytes) ? bytes : HeraldryFallback;
+            sd.WriteNumber(addr + CharHeraldryOffset,     1, b0);
+            sd.WriteNumber(addr + CharHeraldryOffset + 1, 1, b1);
+
             // ── Generic name index (random) ───────────────────────────────────
             int genderOffset = (gender == 2) ? 70 : 0;
             int culture = Rng.Next(0, 5);
@@ -887,8 +994,8 @@ namespace UnicornOverlord
 
             // ── Formation assignment ──────────────────────────────────────────
             sd.WriteNumber(addr + 4,  4, unitIdentifier); // char+0x04: unit identifier
-            uint mappedSlot = formationSlot < 3 ? formationSlot + 3 : formationSlot - 3;
-            sd.WriteNumber(addr + 32, 1, mappedSlot);  // char+0x20: formation slot index
+            uint gameSlot = formationSlot < 3 ? formationSlot + 3 : formationSlot - 3;  // match unit block slot (front/back swap)
+            sd.WriteNumber(addr + 32, 1, gameSlot);  // char+0x20: formation slot index (0–5)
 
             // ── Status flags ──────────────────────────────────────────────────
             sd.WriteNumber(addr + 460, 1, 0x18); // bit0=in formation, bit3=permanent, bit4=hired generic
