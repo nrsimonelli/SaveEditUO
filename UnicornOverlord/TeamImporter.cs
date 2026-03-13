@@ -604,7 +604,8 @@ namespace UnicornOverlord
                     break;
                 }
 
-                uint mappedSlot = slot < 3 ? (uint)slot + 3 : (uint)slot - 3;  // JSON 0–2=front→game 3–5, JSON 3–5=back→game 0–2
+                // 1:1 mapping keeps formation UI and battle in sync. JSON order 0..5 = game slots 0..5.
+                uint mappedSlot = (uint)slot;
                 WriteCharacter(charIdx, charDef, unitIdentifier, mappedSlot, playerNum, heraldryPreset, warnings, newIds,
                     $"Player {playerNum} unit '{unitId}'");
                 WriteUnitSlot(unitIndex, (int)mappedSlot, charIdx);
@@ -668,9 +669,8 @@ namespace UnicornOverlord
                     if (n == null || n.GetValueKind() == JsonValueKind.Null) continue;
                     if (string.Equals(n.ToString(), leaderId, StringComparison.Ordinal))
                     {
-                        int gameSlot = i < 3 ? i + 3 : i - 3;
-                        if (filledSlots.Contains(gameSlot))
-                            return gameSlot;
+                        if (filledSlots.Contains(i))
+                            return i;
                         break;
                     }
                 }
@@ -994,8 +994,7 @@ namespace UnicornOverlord
 
             // ── Formation assignment ──────────────────────────────────────────
             sd.WriteNumber(addr + 4,  4, unitIdentifier); // char+0x04: unit identifier
-            uint gameSlot = formationSlot < 3 ? formationSlot + 3 : formationSlot - 3;  // match unit block slot (front/back swap)
-            sd.WriteNumber(addr + 32, 1, gameSlot);  // char+0x20: formation slot index (0–5)
+            sd.WriteNumber(addr + 32, 1, formationSlot);  // char+0x20: formation slot index (0–5, matches unit block)
 
             // ── Status flags ──────────────────────────────────────────────────
             sd.WriteNumber(addr + 460, 1, 0x18); // bit0=in formation, bit3=permanent, bit4=hired generic
