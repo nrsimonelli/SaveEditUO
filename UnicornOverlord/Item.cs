@@ -61,5 +61,20 @@ namespace UnicornOverlord
 			get => SaveData.Instance().ReadNumber(mAddress + 16, 4);
 			set => SaveData.Instance().WriteNumber(mAddress + 16, 4, value);
 		}
+
+		// Enhanced flag: bit 0x10 of Status, set when a weapon/armor is enhanced at the blacksmith.
+		// Confirmed via save diff (Silver Trident 0x04->0x14, Golden Ram Axe 0x05->0x15).
+		public const uint EnhancedFlag = 0x10;
+
+		public bool Enhanced
+		{
+			get => (Status & EnhancedFlag) != 0;
+			set
+			{
+				uint s = Status;
+				Status = value ? (s | EnhancedFlag) : (s & ~EnhancedFlag);
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Enhanced)));
+			}
+		}
 	}
 }

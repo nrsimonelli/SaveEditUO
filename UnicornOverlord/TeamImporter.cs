@@ -422,7 +422,7 @@ namespace UnicornOverlord
             ["guardsShield"] = 684, ["heavenwingShield"] = 668, ["hoarfrostShield"] = 678,
             ["holyKnightsShield"] = 686, ["holyUnicornShield"] = 706, ["huntersBuckler"] = 673,
             ["icefallShield"] = 658, ["ironShield"] = 646, ["ironcladBuckler"] = 694,
-            ["kaikaiasShield"] = 705, ["luminousShield"] = 679, ["manalithBuckler"] = 695,
+            ["kaikiasShield"] = 705, ["luminousShield"] = 679, ["manalithBuckler"] = 695,
             ["mercenarysShield"] = 685, ["moonlightShield"] = 690, ["namelessGuardsShield"] = 661,
             ["parryingShield"] = 696, ["phantomKnightsShield"] = 664, ["recruitsShield"] = 643,
             ["scarletCrestShield"] = 672, ["searingShield"] = 677, ["spellsteelShield"] = 651,
@@ -1078,6 +1078,9 @@ namespace UnicornOverlord
                     continue;
                 }
 
+                // Optional enhancement: "enhanced": true sets bit 0x10 of Status (blacksmith-enhanced).
+                bool enhanced = eq["enhanced"]?.GetValueKind() == JsonValueKind.True;
+
                 // Count items currently in the save to find the next free inventory slot.
                 uint invCount = 0;
                 for (uint i = 0; i < 3800; i++)
@@ -1102,7 +1105,9 @@ namespace UnicornOverlord
                 sd.WriteNumber(newItemAddr + 8,  3, 0);                  // count = 0 (equipment)
                 sd.WriteNumber(newItemAddr + 11, 1, (uint)saveSlot);     // Equipment1: which char slot
                 sd.WriteNumber(newItemAddr + 12, 1, charSlotIndex);      // Equipment2: char index
-                sd.WriteNumber(newItemAddr + 16, 4, 5);                  // Status = 5 (equipped)
+                uint status = 5;                                         // 5 = equipped
+                if (enhanced) status |= 0x10;                            // bit 0x10 = enhanced
+                sd.WriteNumber(newItemAddr + 16, 4, status);             // Status
 
                 // Write inventory index into character's equipment slot.
                 sd.WriteNumber(charAddr + 76 + (uint)(saveSlot * 4), 4, inventoryIndex);

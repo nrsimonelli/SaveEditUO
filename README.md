@@ -12,13 +12,13 @@ Fork of [turtle-insect/UnicornOverlord](https://github.com/turtle-insect/Unicorn
 ## Requirements
 
 - Windows
-- [.NET 9](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+- [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 - Ability to export and re-import save data on your Switch (e.g. homebrew)
 
 ## Build (developers)
 
 - Windows 10 (64-bit) or later
-- [Visual Studio 2022](https://visualstudio.microsoft.com/) (or .NET 9 SDK)
+- [Visual Studio 2022](https://visualstudio.microsoft.com/) (or .NET 10 SDK)
 
 ## Getting Started
 
